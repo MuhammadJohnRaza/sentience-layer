@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 10% 3.9%;
+    --foreground: 48 89% 50%; /* Gold */
+    --card: 240 10% 3.9%;
+    --card-foreground: 48 89% 50%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 48 89% 50%;
+    --primary: 271 91% 65%; /* Purple */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 271 91% 65%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 271 91% 65%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 48 89% 50%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 48 89% 50%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 48 89% 50%;
+    --primary: 271 91% 65%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 271 91% 65%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 271 91% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-black text-slate-100;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* ─── Custom Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a855f7;
+}
+
+/* ─── Gold gradient animation ─── */
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 4s ease infinite;
+}
+
+/* ─── Glow utilities ─── */
+.glow-gold {
+  box-shadow: 0 0 16px rgba(234, 179, 8, 0.3);
+}
+.glow-purple {
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.3);
+}
+
+/* ─── Ensure no white backgrounds leak from Tailwind prose or forms ─── */
+input, textarea, select {
+  color-scheme: dark;
+}

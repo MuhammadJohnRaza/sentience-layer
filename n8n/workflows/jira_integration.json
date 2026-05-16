@@ -1,0 +1,191 @@
+{
+  "name": "jira_integration",
+  "version": "4.0.0",
+  "description": "Bidirectional Jira integration with issue tracking, sprint management, and automated workflow updates",
+  "nodes": [
+    {
+      "id": "trigger",
+      "type": "trigger",
+      "subtype": "jira_webhook",
+      "config": {
+        "events": [
+          "issue_created",
+          "issue_updated",
+          "issue_resolved",
+          "comment_added",
+          "sprint_started",
+          "sprint_completed"
+        ],
+        "filter_projects": true,
+        "verify_signature": true
+      },
+      "next": ["parse_jira_event"]
+    },
+    {
+      "id": "parse_jira_event",
+      "type": "action",
+      "subtype": "event_parsing",
+      "config": {
+        "extract_issue_data": true,
+        "extract_user_data": true,
+        "extract_project_data": true,
+        "normalize_fields": true
+      },
+      "next": ["authenticate_user"]
+    },
+    {
+      "id": "authenticate_user",
+      "type": "action",
+      "subtype": "auth",
+      "config": {
+        "verify_jira_user": true,
+        "sync_user_profile": true,
+        "check_permissions": true,
+        "map_to_internal_user": true
+      },
+      "next": ["route_by_event_type"]
+    },
+    {
+      "id": "route_by_event_type",
+      "type": "condition",
+      "subtype": "event_routing",
+      "config": {
+        "routes": [
+          {"event": "issue_created", "target": "process_new_issue"},
+          {"event": "issue_updated", "target": "process_issue_update"},
+          {"event": "issue_resolved", "target": "process_resolution"},
+          {"event": "comment_added", "target": "process_comment"},
+          {"event": "sprint_completed", "target": "process_sprint_review"}
+        ]
+      },
+      "next": {
+        "process_new_issue": ["process_new_issue"],
+        "process_issue_update": ["process_issue_update"],
+        "process_resolution": ["process_resolution"],
+        "process_comment": ["process_comment"],
+        "process_sprint_review": ["process_sprint_review"]
+      }
+    },
+    {
+      "id": "process_new_issue",
+      "type": "action",
+      "subtype": "issue_processing",
+      "config": {
+        "auto_categorize": true,
+        "extract_requirements": true,
+        "identify_dependencies": true,
+        "suggest_assignee": true,
+        "create_internal_ticket": true
+      },
+      "next": ["update_jira_issue"]
+    },
+    {
+      "id": "process_issue_update",
+      "type": "action",
+      "subtype": "update_processing",
+      "config": {
+        "track_field_changes": true,
+        "detect_status_transitions": true,
+        "sync_with_internal_state": true,
+        "notify_stakeholders": true
+      },
+      "next": ["update_jira_issue"]
+    },
+    {
+      "id": "process_resolution",
+      "type": "action",
+      "subtype": "resolution_processing",
+      "config": {
+        "validate_resolution": true,
+        "update_metrics": true,
+        "trigger_billing": true,
+        "archive_context": true
+      },
+      "next": ["update_jira_issue"]
+    },
+    {
+      "id": "process_comment",
+      "type": "action",
+      "subtype": "comment_processing",
+      "config": {
+        "parse_mentions": true,
+        "extract_action_items": true,
+        "detect_sentiment": true,
+        "sync_to_internal_chat": true
+      },
+      "next": ["sync_comment"]
+    },
+    {
+      "id": "process_sprint_review",
+      "type": "action",
+      "subtype": "sprint_analysis",
+      "config": {
+        "calculate_velocity": true,
+        "analyze_completed_work": true,
+        "generate_insights": true,
+        "update_forecasts": true
+      },
+      "next": ["generate_sprint_report"]
+    },
+    {
+      "id": "update_jira_issue",
+      "type": "action",
+      "subtype": "jira_update",
+      "config": {
+        "update_fields": ["status", "assignee", "labels", "custom_fields"],
+        "add_comments": true,
+        "transition_workflow": true,
+        "notify_watchers": false
+      },
+      "next": ["log_sync"]
+    },
+    {
+      "id": "sync_comment",
+      "type": "action",
+      "subtype": "comment_sync",
+      "config": {
+        "post_to_jira": true,
+        "format_for_jira": true,
+        "preserve_formatting": true
+      },
+      "next": ["log_sync"]
+    },
+    {
+      "id": "generate_sprint_report",
+      "type": "action",
+      "subtype": "report_generation",
+      "config": {
+        "include_metrics": true,
+        "include_charts": true,
+        "post_to_confluence": true,
+        "notify_team": true
+      },
+      "next": ["log_sync"]
+    },
+    {
+      "id": "log_sync",
+      "type": "action",
+      "subtype": "logging",
+      "config": {
+        "log_sync_events": true,
+        "track_sync_health": true,
+        "detect_drift": true
+      },
+      "next": ["end"]
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "config": {
+        "cleanup": true
+      }
+    }
+  ],
+  "features": {
+    "bidirectional_sync": true,
+    "conflict_resolution": true,
+    "batch_operations": true,
+    "field_mapping": true,
+    "custom_workflow_support": true
+  }
+}

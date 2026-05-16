@@ -1,0 +1,198 @@
+{
+  "name": "simulation_pipeline",
+  "version": "4.0.0",
+  "description": "Probabilistic simulation pipeline with scenario generation, Monte Carlo execution, and outcome analysis",
+  "nodes": [
+    {
+      "id": "trigger",
+      "type": "trigger",
+      "subtype": "api",
+      "config": {
+        "path": "/simulate",
+        "methods": ["POST"],
+        "rate_limit": "100/minute"
+      },
+      "next": ["parse_scenario"]
+    },
+    {
+      "id": "parse_scenario",
+      "type": "action",
+      "subtype": "parsing",
+      "config": {
+        "schema": "simulation_request",
+        "extract": ["scenario_description", "variables", "constraints", "objective", "iterations"]
+      },
+      "next": ["validate_model"]
+    },
+    {
+      "id": "validate_model",
+      "type": "action",
+      "subtype": "validation",
+      "config": {
+        "checks": [
+          "model_completeness",
+          "variable_bounds",
+          "constraint_satisfiability",
+          "objective_reachability"
+        ],
+        "auto_fix_minor_issues": true
+      },
+      "next": ["build_world_model"]
+    },
+    {
+      "id": "build_world_model",
+      "type": "action",
+      "subtype": "graph_construction",
+      "config": {
+        "include_causal_relations": true,
+        "include_temporal_dynamics": true,
+        "include_agent_behaviors": true,
+        "confidence_threshold": 0.6
+      },
+      "next": ["generate_scenarios"]
+    },
+    {
+      "id": "generate_scenarios",
+      "type": "action",
+      "subtype": "scenario_generation",
+      "config": {
+        "methods": ["monte_carlo", "latin_hypercube", "importance_sampling"],
+        "scenario_count": 1000,
+        "branching_factor": 5,
+        "horizon": "12_months",
+        "include_black_swan": true,
+        "black_swan_probability": 0.01
+      },
+      "next": ["distribute_simulation"]
+    },
+    {
+      "id": "distribute_simulation",
+      "type": "action",
+      "subtype": "orchestration",
+      "config": {
+        "executor": "celery_cluster",
+        "batch_size": 100,
+        "parallelism": 10,
+        "checkpoint_interval": 50,
+        "fault_tolerance": "retry_failed_batches"
+      },
+      "next": ["aggregate_results"]
+    },
+    {
+      "id": "aggregate_results",
+      "type": "action",
+      "subtype": "aggregation",
+      "config": {
+        "statistics": [
+          "mean",
+          "median",
+          "std_dev",
+          "percentiles_5_95",
+          "percentiles_1_99",
+          "value_at_risk",
+          "conditional_value_at_risk"
+        ],
+        "convergence_check": true,
+        "convergence_threshold": 0.01
+      },
+      "next": ["analyze_outcomes"]
+    },
+    {
+      "id": "analyze_outcomes",
+      "type": "action",
+      "subtype": "analysis",
+      "config": {
+        "dimensions": [
+          "probability_distribution",
+          "sensitivity_analysis",
+          "regret_analysis",
+          "robustness_check"
+        ],
+        "identify_critical_paths": true,
+        "find_leverage_points": true
+      },
+      "next": ["generate_recommendations"]
+    },
+    {
+      "id": "generate_recommendations",
+      "type": "action",
+      "subtype": "synthesis",
+      "config": {
+        "output_formats": ["executive_summary", "detailed_report", "interactive_dashboard"],
+        "include_confidence_intervals": true,
+        "include_action_items": true,
+        "risk_adjusted": true
+      },
+      "next": ["present_results"]
+    },
+    {
+      "id": "present_results",
+      "type": "action",
+      "subtype": "presentation",
+      "config": {
+        "formats": {
+          "api": {"include_raw_data": true},
+          "webhook": {"compress_large_payloads": true},
+          "stream": {"real_time_updates": false}
+        },
+        "cache_results_seconds": 300
+      },
+      "next": ["archive_simulation"]
+    },
+    {
+      "id": "archive_simulation",
+      "type": "action",
+      "subtype": "persistence",
+      "config": {
+        "store_raw_runs": false,
+        "store_aggregates": true,
+        "store_model_state": true,
+        "retention_policy": "1_year",
+        "compression": "zstd"
+      },
+      "next": ["feedback_loop"]
+    },
+    {
+      "id": "feedback_loop",
+      "type": "action",
+      "subtype": "learning",
+      "config": {
+        "compare_with_actual_outcomes": true,
+        "update_model_parameters": false,
+        "min_actual_samples": 10,
+        "drift_detection": true
+      },
+      "next": ["end"]
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "config": {
+        "cleanup_temp_files": true,
+        "release_compute_resources": true
+      }
+    }
+  ],
+  "optimization": {
+    "early_stopping": {
+      "enabled": true,
+      "confidence_threshold": 0.95,
+      "min_iterations": 100
+    },
+    "adaptive_sampling": {
+      "enabled": true,
+      "focus_on_high_variance_regions": true
+    },
+    "result_caching": {
+      "enabled": true,
+      "cache_key_fields": ["scenario_hash", "model_version"],
+      "ttl_seconds": 3600
+    }
+  },
+  "resource_management": {
+    "max_compute_hours": 1,
+    "max_memory_gb": 32,
+    "gpu_enabled": false,
+    "spot_instances_allowed": true
+  }
+}

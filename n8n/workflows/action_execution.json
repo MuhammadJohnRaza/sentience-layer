@@ -1,0 +1,170 @@
+{
+  "name": "action_execution",
+  "version": "4.0.0",
+  "description": "Action execution workflow with validation, permission checking, and execution monitoring",
+  "nodes": [
+    {
+      "id": "trigger",
+      "type": "trigger",
+      "subtype": "webhook",
+      "config": {
+        "path": "/actions/execute",
+        "methods": ["POST"],
+        "require_auth": true,
+        "validate_payload": true
+      },
+      "next": ["validate_action"]
+    },
+    {
+      "id": "validate_action",
+      "type": "action",
+      "subtype": "validation",
+      "config": {
+        "checks": [
+          "action_exists",
+          "action_enabled",
+          "parameters_valid",
+          "dependencies_met"
+        ],
+        "auto_resolve_dependencies": true
+      },
+      "next": ["check_permissions"]
+    },
+    {
+      "id": "check_permissions",
+      "type": "action",
+      "subtype": "authorization",
+      "config": {
+        "permission_model": "rbac",
+        "check_action_permission": true,
+        "check_resource_permission": true,
+        "require_mfa_for_critical": true
+      },
+      "next": {
+        "authorized": ["select_agent"],
+        "unauthorized": ["notify_denied"]
+      }
+    },
+    {
+      "id": "notify_denied",
+      "type": "action",
+      "subtype": "notification",
+      "config": {
+        "message": "Action execution denied due to insufficient permissions.",
+        "include_reason": true,
+        "suggest_alternatives": true
+      },
+      "next": ["end"]
+    },
+    {
+      "id": "select_agent",
+      "type": "action",
+      "subtype": "agent_selection",
+      "config": {
+        "selection_strategy": "capability_matching",
+        "fallback_strategy": "round_robin",
+        "max_retries": 3,
+        "consider_load": true
+      },
+      "next": ["dispatch_to_agent"]
+    },
+    {
+      "id": "dispatch_to_agent",
+      "type": "action",
+      "subtype": "task_dispatch",
+      "config": {
+        "transport": "message_queue",
+        "priority": "normal",
+        "timeout_seconds": 300,
+        "include_context": true
+      },
+      "next": ["monitor_execution"]
+    },
+    {
+      "id": "monitor_execution",
+      "type": "action",
+      "subtype": "execution_monitor",
+      "config": {
+        "poll_interval_seconds": 5,
+        "stream_logs": true,
+        "capture_metrics": true,
+        "detect_anomalies": true
+      },
+      "next": ["evaluate_result"]
+    },
+    {
+      "id": "evaluate_result",
+      "type": "condition",
+      "subtype": "result_evaluation",
+      "config": {
+        "success_criteria": ["exit_code_0", "output_valid", "side_effects_verified"],
+        "auto_retry_on_failure": true,
+        "max_retries": 2
+      },
+      "next": {
+        "success": ["log_success"],
+        "failure": ["handle_failure"]
+      }
+    },
+    {
+      "id": "handle_failure",
+      "type": "action",
+      "subtype": "error_handling",
+      "config": {
+        "classify_error": true,
+        "attempt_recovery": true,
+        "notify_on_persistent_failure": true,
+        "create_incident": true
+      },
+      "next": ["notify_failure"]
+    },
+    {
+      "id": "notify_failure",
+      "type": "action",
+      "subtype": "notification",
+      "config": {
+        "channels": ["email", "slack"],
+        "include_diagnostics": true,
+        "suggest_remediation": true
+      },
+      "next": ["end"]
+    },
+    {
+      "id": "log_success",
+      "type": "action",
+      "subtype": "logging",
+      "config": {
+        "log_level": "info",
+        "include_metrics": true,
+        "update_statistics": true,
+        "audit_trail": true
+      },
+      "next": ["cleanup"]
+    },
+    {
+      "id": "cleanup",
+      "type": "action",
+      "subtype": "cleanup",
+      "config": {
+        "release_resources": true,
+        "clear_temp_files": true,
+        "reset_state": true
+      },
+      "next": ["end"]
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "config": {
+        "finalize_transaction": true,
+        "release_locks": true
+      }
+    }
+  ],
+  "features": {
+    "idempotency": true,
+    "rollback_support": true,
+    "audit_logging": true,
+    "rate_limiting": true
+  }
+}

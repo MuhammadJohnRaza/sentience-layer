@@ -1,0 +1,210 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: sentience-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sentience}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sentience123}
+      POSTGRES_DB: ${POSTGRES_DB:-sentience_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentience"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sentience-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: sentience-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - sentience-network
+
+  # ChromaDB Vector Database
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: sentience-chromadb
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    networks:
+      - sentience-network
+
+  # Python Backend (FastAPI)
+  backend-python:
+    build:
+      context: ./backend/python
+      dockerfile: Dockerfile
+    container_name: sentience-backend-python
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://sentience:sentience123@postgres:5432/sentience_db
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - GOOGLE_ANTIGRAVITY_API_KEY=${GOOGLE_ANTIGRAVITY_API_KEY}
+      - GOOGLE_GEMINI_API_KEY=${GOOGLE_GEMINI_API_KEY}
+    volumes:
+      - ./backend/python:/app
+      - ./ml-models:/app/models
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - sentience-network
+
+  # Node.js Backend (TypeScript)
+  backend-node:
+    build:
+      context: ./backend/node
+      dockerfile: Dockerfile
+    container_name: sentience-backend-node
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://sentience:sentience123@postgres:5432/sentience_db
+      - REDIS_URL=redis://redis:6379/0
+      - PYTHON_API_URL=http://backend-python:8000
+    volumes:
+      - ./backend/node:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - redis
+      - backend-python
+    command: npm run dev
+    networks:
+      - sentience-network
+
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sentience-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_NODE_API_URL=http://localhost:3001
+      - NEXT_PUBLIC_WS_URL=ws://localhost:3001
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend-python
+      - backend-node
+    command: npm run dev
+    networks:
+      - sentience-network
+
+  # Celery Worker
+  celery-worker:
+    build:
+      context: ./backend/python
+      dockerfile: Dockerfile
+    container_name: sentience-celery-worker
+    environment:
+      - DATABASE_URL=postgresql://sentience:sentience123@postgres:5432/sentience_db
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - GOOGLE_ANTIGRAVITY_API_KEY=${GOOGLE_ANTIGRAVITY_API_KEY}
+    volumes:
+      - ./backend/python:/app
+    depends_on:
+      - postgres
+      - redis
+    command: celery -A celery_app worker --loglevel=info
+    networks:
+      - sentience-network
+
+  # Celery Beat (Scheduler)
+  celery-beat:
+    build:
+      context: ./backend/python
+      dockerfile: Dockerfile
+    container_name: sentience-celery-beat
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    volumes:
+      - ./backend/python:/app
+    depends_on:
+      - redis
+    command: celery -A celery_app beat --loglevel=info
+    networks:
+      - sentience-network
+
+  # N8N Workflow Automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: sentience-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin123
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/home/node/.n8n/workflows
+    networks:
+      - sentience-network
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sentience-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - sentience-network
+
+networks:
+  sentience-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  chroma_data:
+  n8n_data:
+  prometheus_data:

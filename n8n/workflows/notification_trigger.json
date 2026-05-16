@@ -1,0 +1,136 @@
+{
+  "name": "notification_trigger",
+  "version": "4.0.0",
+  "description": "Smart notification system with priority routing, user preference matching, and delivery optimization",
+  "nodes": [
+    {
+      "id": "trigger",
+      "type": "trigger",
+      "subtype": "event",
+      "config": {
+        "event_types": [
+          "insight_generated",
+          "action_completed",
+          "action_failed",
+          "simulation_complete",
+          "system_alert",
+          "threshold_breach"
+        ],
+        "filter_duplicates": true,
+        "deduplication_window_seconds": 300
+      },
+      "next": ["classify_notification"]
+    },
+    {
+      "id": "classify_notification",
+      "type": "action",
+      "subtype": "classification",
+      "config": {
+        "priority_levels": ["low", "medium", "high", "critical"],
+        "categories": ["info", "warning", "error", "success"],
+        "auto_classify": true,
+        "use_ml_model": true
+      },
+      "next": ["check_user_preferences"]
+    },
+    {
+      "id": "check_user_preferences",
+      "type": "action",
+      "subtype": "preference_lookup",
+      "config": {
+        "respect_quiet_hours": true,
+        "check_frequency_settings": true,
+        "filter_by_interest": true,
+        "batch_low_priority": true
+      },
+      "next": ["select_channels"]
+    },
+    {
+      "id": "select_channels",
+      "type": "action",
+      "subtype": "channel_selection",
+      "config": {
+        "available_channels": ["email", "slack", "push", "sms", "webhook"],
+        "selection_criteria": "user_preference_and_priority",
+        "fallback_enabled": true,
+        "escalation_enabled": true
+      },
+      "next": ["format_message"]
+    },
+    {
+      "id": "format_message",
+      "type": "action",
+      "subtype": "template_rendering",
+      "config": {
+        "template_engine": "jinja2",
+        "include_context": true,
+        "include_actions": true,
+        "localize": true,
+        "max_length": 1000
+      },
+      "next": ["send_notifications"]
+    },
+    {
+      "id": "send_notifications",
+      "type": "action",
+      "subtype": "multi_channel_send",
+      "config": {
+        "parallel_sending": true,
+        "track_delivery": true,
+        "retry_on_failure": true,
+        "max_retries": 3
+      },
+      "next": ["track_delivery"]
+    },
+    {
+      "id": "track_delivery",
+      "type": "action",
+      "subtype": "delivery_tracking",
+      "config": {
+        "track_opens": true,
+        "track_clicks": true,
+        "track_engagement": true,
+        "update_user_profile": true
+      },
+      "next": ["handle_responses"]
+    },
+    {
+      "id": "handle_responses",
+      "type": "action",
+      "subtype": "response_handler",
+      "config": {
+        "listen_for_replies": true,
+        "parse_commands": true,
+        "execute_quick_actions": true,
+        "timeout_seconds": 3600
+      },
+      "next": ["log_notification"]
+    },
+    {
+      "id": "log_notification",
+      "type": "action",
+      "subtype": "analytics",
+      "config": {
+        "log_event": true,
+        "update_metrics": true,
+        "calculate_effectiveness": true,
+        "store_for_analysis": true
+      },
+      "next": ["end"]
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "config": {
+        "cleanup_context": true
+      }
+    }
+  ],
+  "features": {
+    "rate_limiting": true,
+    "quiet_hours": true,
+    "digest_mode": true,
+    "escalation_policy": true,
+    "a_b_testing": true
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "sentience-layer",
+  "version": "4.0.0",
+  "description": "Input-Specific Neural Network & Cognitive OS",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend/node"
+  ],
+  "scripts": {
+    "install:all": "npm install && cd frontend && npm install && cd ../backend/node && npm install",
+    "dev": "concurrently \"npm run dev:python\" \"npm run dev:node\"",
+    "dev:python": "cd backend/python && python main.py",
+    "dev:node": "cd backend/node && npm run dev",
+    "build": "npm run build:frontend && npm run build:node",
+    "build:frontend": "cd frontend && npm run build",
+    "build:node": "cd backend/node && npm run build",
+    "test": "npm run test:python && npm run test:node",
+    "test:python": "cd backend/python && pytest",
+    "test:node": "cd backend/node && npm test",
+    "lint": "npm run lint:python && npm run lint:node",
+    "lint:python": "cd backend/python && flake8",
+    "lint:node": "cd backend/node && npm run lint"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.11"
+  }
+}

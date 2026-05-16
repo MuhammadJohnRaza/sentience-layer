@@ -1,0 +1,318 @@
+{
+  "name": "slack_integration",
+  "version": "4.0.0",
+  "description": "Bidirectional Slack integration with command parsing, agent delegation, and response formatting",
+  "nodes": [
+    {
+      "id": "trigger",
+      "type": "trigger",
+      "subtype": "slack_event",
+      "config": {
+        "event_types": ["message", "app_mention", "slash_command", "interactive"],
+        "verify_signature": true,
+        "filter_bots": true
+      },
+      "next": ["parse_input"]
+    },
+    {
+      "id": "parse_input",
+      "type": "action",
+      "subtype": "nlp_parsing",
+      "config": {
+        "extract_intent": true,
+        "extract_entities": true,
+        "extract_sentiment": true,
+        "resolve_user_mentions": true,
+        "context_window_messages": 10
+      },
+      "next": ["authenticate"]
+    },
+    {
+      "id": "authenticate",
+      "type": "action",
+      "subtype": "auth",
+      "config": {
+        "verify_workspace": true,
+        "verify_user_permissions": true,
+        "check_rate_limits": true,
+        "enforce_quota": true
+      },
+      "next": ["route_intent"]
+    },
+    {
+      "id": "route_intent",
+      "type": "condition",
+      "subtype": "intent_routing",
+      "config": {
+        "routes": [
+          {"intent": "query_insights", "target": "query_knowledge"},
+          {"intent": "execute_action", "target": "delegate_action"},
+          {"intent": "run_simulation", "target": "trigger_simulation"},
+          {"intent": "get_status", "target": "fetch_status"},
+          {"intent": "configure_settings", "target": "update_preferences"},
+          {"intent": "help", "target": "show_help"},
+          {"intent": "feedback", "target": "collect_feedback"},
+          {"intent": "default", "target": "clarify"}
+        ]
+      },
+      "next": {
+        "query_knowledge": ["query_knowledge"],
+        "delegate_action": ["validate_permissions"],
+        "trigger_simulation": ["prepare_simulation"],
+        "fetch_status": ["fetch_status"],
+        "update_preferences": ["update_preferences"],
+        "show_help": ["show_help"],
+        "collect_feedback": ["collect_feedback"],
+        "clarify": ["clarify"]
+      }
+    },
+    {
+      "id": "query_knowledge",
+      "type": "action",
+      "subtype": "rag_query",
+      "config": {
+        "retriever": "semantic_hybrid",
+        "top_k": 5,
+        "include_sources": true,
+        "summarize": true,
+        "max_response_length": 2000
+      },
+      "next": ["format_response"]
+    },
+    {
+      "id": "validate_permissions",
+      "type": "action",
+      "subtype": "authorization",
+      "config": {
+        "check_action_permissions": true,
+        "check_resource_access": true,
+        "require_approval_for_high_risk": true
+      },
+      "next": {
+        "authorized": ["delegate_action"],
+        "unauthorized": ["notify_unauthorized"],
+        "needs_approval": ["request_approval"]
+      }
+    },
+    {
+      "id": "delegate_action",
+      "type": "action",
+      "subtype": "agent_delegation",
+      "config": {
+        "agent_selector": "capability_based",
+        "timeout_seconds": 120,
+        "progress_updates": true,
+        "update_interval_seconds": 10
+      },
+      "next": ["monitor_execution"]
+    },
+    {
+      "id": "monitor_execution",
+      "type": "action",
+      "subtype": "progress_monitoring",
+      "config": {
+        "stream_updates": true,
+        "format": "slack_blocks",
+        "include_cancel_button": true,
+        "heartbeat_interval_seconds": 5
+      },
+      "next": ["format_response"]
+    },
+    {
+      "id": "prepare_simulation",
+      "type": "action",
+      "subtype": "simulation_prep",
+      "config": {
+        "validate_parameters": true,
+        "estimate_duration": true,
+        "confirm_with_user": true,
+        "show_cost_estimate": false
+      },
+      "next": {
+        "confirmed": ["trigger_simulation"],
+        "cancelled": ["acknowledge_cancel"]
+      }
+    },
+    {
+      "id": "trigger_simulation",
+      "type": "action",
+      "subtype": "workflow_trigger",
+      "config": {
+        "target_workflow": "simulation_pipeline",
+        "async_execution": true,
+        "notify_on_completion": true,
+        "result_delivery": "thread_reply"
+      },
+      "next": ["acknowledge_trigger"]
+    },
+    {
+      "id": "fetch_status",
+      "type": "action",
+      "subtype": "status_aggregation",
+      "config": {
+        "components": ["agents", "workflows", "system_health", "recent_errors"],
+        "format": "dashboard_blocks",
+        "auto_refresh": false
+      },
+      "next": ["format_response"]
+    },
+    {
+      "id": "update_preferences",
+      "type": "action",
+      "subtype": "user_settings",
+      "config": {
+        "modifiable_settings": [
+          "notification_frequency",
+          "default_channel",
+          "digest_schedule",
+          "alert_thresholds"
+        ],
+        "validate_input": true
+      },
+      "next": ["format_response"]
+    },
+    {
+      "id": "show_help",
+      "type": "action",
+      "subtype": "help_generator",
+      "config": {
+        "contextual": true,
+        "include_examples": true,
+        "interactive_tour": false
+      },
+      "next": ["format_response"]
+    },
+    {
+      "id": "collect_feedback",
+      "type": "action",
+      "subtype": "feedback_collection",
+      "config": {
+        "rating_scale": 5,
+        "collect_free_text": true,
+        "categorize_automatically": true,
+        "incentive": false
+      },
+      "next": ["format_response"]
+    },
+    {
+      "id": "clarify",
+      "type": "action",
+      "subtype": "clarification",
+      "config": {
+        "suggest_similar_intents": true,
+        "provide_examples": true,
+        "offer_human_handoff": true
+      },
+      "next": ["format_response"]
+    },
+    {
+      "id": "notify_unauthorized",
+      "type": "action",
+      "subtype": "notification",
+      "config": {
+        "message": "You don't have permission for this action.",
+        "suggest_alternatives": true,
+        "log_security_event": true
+      },
+      "next": ["end"]
+    },
+    {
+      "id": "request_approval",
+      "type": "action",
+      "subtype": "approval_request",
+      "config": {
+        "approver_selection": "manager_or_owner",
+        "timeout_hours": 24,
+        "reminder_interval_hours": 4,
+        "format": "interactive_blocks"
+      },
+      "next": ["acknowledge_approval_request"]
+    },
+    {
+      "id": "acknowledge_cancel",
+      "type": "action",
+      "subtype": "acknowledgment",
+      "config": {
+        "message": "Simulation cancelled.",
+        "emoji": ":x:"
+      },
+      "next": ["end"]
+    },
+    {
+      "id": "acknowledge_trigger",
+      "type": "action",
+      "subtype": "acknowledgment",
+      "config": {
+        "message": "Simulation started. I'll notify you when complete.",
+        "emoji": ":rocket:",
+        "include_job_id": true
+      },
+      "next": ["end"]
+    },
+    {
+      "id": "acknowledge_approval_request",
+      "type": "action",
+      "subtype": "acknowledgment",
+      "config": {
+        "message": "Approval request sent.",
+        "emoji": ":hourglass_flowing_sand:"
+      },
+      "next": ["end"]
+    },
+    {
+      "id": "format_response",
+      "type": "action",
+      "subtype": "response_formatter",
+      "config": {
+        "format": "slack_blocks",
+        "include_metadata": false,
+        "max_length": 3000,
+        "truncate_strategy": "smart_summary",
+        "threading": true
+      },
+      "next": ["send_response"]
+    },
+    {
+      "id": "send_response",
+      "type": "action",
+      "subtype": "slack_send",
+      "config": {
+        "fallback_to_text": true,
+        "handle_rate_limits": true,
+        "retry_on_failure": true,
+        "delivery_confirmation": false
+      },
+      "next": ["log_interaction"]
+    },
+    {
+      "id": "log_interaction",
+      "type": "action",
+      "subtype": "analytics",
+      "config": {
+        "track_response_time": true,
+        "track_user_satisfaction": false,
+        "track_intent_accuracy": true,
+        "update_user_profile": true
+      },
+      "next": ["end"]
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "config": {
+        "cleanup_context": true,
+        "release_memory": true
+      }
+    }
+  ],
+  "features": {
+    "thread_awareness": true,
+    "context_preservation": true,
+    "multi_workspace": true,
+    "ephemeral_messages": true,
+    "home_tab": {
+      "enabled": true,
+      "refresh_interval_seconds": 300
+    }
+  }
+}

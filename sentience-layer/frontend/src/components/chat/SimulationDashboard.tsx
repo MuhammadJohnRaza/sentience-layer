@@ -1,0 +1,1 @@
+export function SimulationDashboard({ simulation }: { simulation: any }) { return <div className="p-4 border rounded-lg bg-purple-50 text-purple-900">Simulation Dashboard</div>; }
