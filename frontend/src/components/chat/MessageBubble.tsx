@@ -254,13 +254,31 @@ export function MessageBubble({ message }: { message: Message }) {
               🎯 ACTION ITEMS ({actions.length})
             </button>
             {actionsOpen && (
-              <ul className="space-y-1">
-                {actions.map((a: string, i: number) => (
-                  <li key={i} className="flex items-start gap-2 text-[11px] text-emerald-300/80 bg-emerald-950/20 border border-emerald-500/15 rounded-lg px-2.5 py-1.5">
-                    <span className="text-emerald-400 shrink-0 font-black text-xs">✓</span>
-                    <span className="leading-relaxed">{a}</span>
-                  </li>
-                ))}
+              <ul className="space-y-1.5">
+                {actions.map((a: any, i: number) => {
+                  const isObj = typeof a === "object" && a !== null;
+                  const title = isObj ? (a.title || a.name || "Action Item") : String(a);
+                  const desc = isObj ? a.description : "";
+
+                  return (
+                    <li key={i} className="flex flex-col gap-1 text-[11px] text-emerald-300/80 bg-[#061e14]/40 border border-emerald-500/15 rounded-lg px-2.5 py-1.5 shadow-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-emerald-400 shrink-0 font-black text-xs">✓</span>
+                        <span className="leading-relaxed font-bold text-emerald-200">{title}</span>
+                        {isObj && a.status && (
+                          <Badge className="ml-auto text-[7px] font-black tracking-widest uppercase bg-[#05140e] text-emerald-400 border border-emerald-500/30 px-1 py-0 h-4">
+                            {a.status}
+                          </Badge>
+                        )}
+                      </div>
+                      {desc && (
+                        <p className="text-[10px] text-muted-foreground/80 leading-relaxed pl-3.5 border-l border-emerald-500/10 mt-0.5">
+                          {desc}
+                        </p>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
