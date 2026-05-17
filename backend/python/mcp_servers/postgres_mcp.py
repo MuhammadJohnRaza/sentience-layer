@@ -21,10 +21,45 @@ class PostgresMcp:
     def initialize(self) -> bool:
         """Initialize the simulated PostgreSQL/SQLite schema and seed telemetry datasets"""
         try:
-            # Using an in-memory SQLite schema to simulate PostgreSQL robustly and cleanly
-            self.db_path = ":memory:"
+            # Use persistent database instead of :memory:
+            backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            workspace_root = os.path.dirname(backend_dir)
+            db_dir = os.path.join(workspace_root, "database")
+            os.makedirs(db_dir, exist_ok=True)
+            self.db_path = os.path.join(db_dir, "sentience_layer.db")
+            
             self.conn = sqlite3.connect(self.db_path)
             cursor = self.conn.cursor()
+            
+            # Execute database directory scripts (schema.sql, migrations, seed.sql)
+            def run_sql_file(filepath):
+                if os.path.exists(filepath):
+                    with open(filepath, "r") as f:
+                        sql = f.read()
+                        # Simple extraction of "Up" migrations if needed, or just run full file
+                        # We'll just strip the "-- Down" part for migrations
+                        if "-- Down" in sql:
+                            sql = sql.split("-- Down")[0]
+                        
+                        # Replace Postgres specific syntax with SQLite compatible syntax
+                        sql = sql.replace("SERIAL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
+                        sql = sql.replace("JSONB", "TEXT")
+                        
+                        try:
+                            cursor.executescript(sql)
+                            logger.info(f"Executed SQL script: {os.path.basename(filepath)}")
+                        except Exception as e:
+                            logger.warning(f"Error executing {filepath}: {e}")
+
+            run_sql_file(os.path.join(db_dir, "schema.sql"))
+            
+            migrations_dir = os.path.join(db_dir, "migrations")
+            if os.path.exists(migrations_dir):
+                for migration in sorted(os.listdir(migrations_dir)):
+                    if migration.endswith(".sql"):
+                        run_sql_file(os.path.join(migrations_dir, migration))
+                        
+            run_sql_file(os.path.join(db_dir, "seed.sql"))
             
             # Create active database tables for high-fidelity agentic queries
             cursor.execute("""

@@ -158,3 +158,36 @@ def generate_playbook_task(self, session_memory: list, uploaded_documents: list)
     }
     
     return playbook
+
+# ─── Integration of tasks directory modules ────────────────────────────────────
+
+from tasks.report_tasks import get_instance as get_report_tasks
+from tasks.cleanup_tasks import get_instance as get_cleanup_tasks
+from tasks.dream_tasks import get_instance as get_dream_tasks
+from tasks.learning_tasks import get_instance as get_learning_tasks
+from tasks.agent_tasks import get_instance as get_agent_tasks
+
+@celery_app.task(bind=True)
+def execute_report_task(self, *args, **kwargs):
+    instance = get_report_tasks()
+    return instance.execute(*args, **kwargs)
+
+@celery_app.task(bind=True)
+def execute_cleanup_task(self, *args, **kwargs):
+    instance = get_cleanup_tasks()
+    return instance.execute(*args, **kwargs)
+
+@celery_app.task(bind=True)
+def execute_dream_task(self, *args, **kwargs):
+    instance = get_dream_tasks()
+    return instance.execute(*args, **kwargs)
+
+@celery_app.task(bind=True)
+def execute_learning_task(self, *args, **kwargs):
+    instance = get_learning_tasks()
+    return instance.execute(*args, **kwargs)
+
+@celery_app.task(bind=True)
+def execute_agent_task(self, *args, **kwargs):
+    instance = get_agent_tasks()
+    return instance.execute(*args, **kwargs)

@@ -399,36 +399,49 @@ class SentienceKernel:
         arousal: Any,
     ) -> Optional[Dict[str, Any]]:
         """
-        Simple action-selection layer.
-        In production this delegates to the action-generation service.
+        Action-selection layer delegating to SwarmOrchestrator.
         """
         arousal_level = arousal.current_level() if hasattr(arousal, "current_level") else 0.5
 
-        # High doubt + high arousal → request more information
-        if doubts and arousal_level > 0.7:
-            return {
-                "type": "request_clarification",
-                "summary": "high_doubt_high_arousal",
-                "confidence": 0.4,
-                "reason": "Multiple doubts raised under high arousal",
-            }
-
-        # Low arousal + no doubts → proceed with intuition
-        if not doubts and arousal_level < 0.4:
+        # Only trigger full swarm if arousal is high enough or explicitly requested
+        if arousal_level < 0.3 and not doubts:
             return {
                 "type": "proceed",
                 "summary": "low_risk_proceed",
                 "confidence": getattr(intuition, "confidence", 0.7) if intuition else 0.5,
-                "reason": "No doubts, low arousal — heuristic safe",
+                "reason": "No doubts, low arousal — heuristics are safe.",
             }
 
-        # Default: deliberative mode
-        return {
-            "type": "deliberate",
-            "summary": "standard_deliberation",
-            "confidence": 0.6,
-            "reason": "Standard deliberative pathway",
-        }
+        try:
+            from backend.python.swarm_orchestrator import SwarmOrchestrator
+            orchestrator = SwarmOrchestrator(system_prompt="Background autonomous reasoning cycle.")
+            
+            query = context.get("query", "Analyze internal state and recent context.")
+            
+            # Formulate context for swarm
+            doc_context = ""
+            if doubts:
+                doc_context += "Current Doubts to resolve:\n" + "\n".join([str(d) for d in doubts]) + "\n"
+
+            # Execute full Swarm (Critic -> Consensus -> Playbook)
+            result = await orchestrator.run(query=query, doc_context=doc_context)
+            
+            return {
+                "type": "swarm_execution",
+                "summary": result.key_finding,
+                "confidence": result.confidence,
+                "reason": "Swarm Orchestrator Background Run",
+                "actions": result.actions,
+                "agent_chain": [s.agent_id for s in result.agent_chain]
+            }
+        except Exception as e:
+            logger.error(f"SwarmOrchestrator failed during background cycle: {e}")
+            return {
+                "type": "deliberate",
+                "summary": "standard_deliberation",
+                "confidence": 0.6,
+                "reason": f"Standard deliberative pathway (Swarm fallback: {str(e)})",
+            }
 
     async def _persist_to_memory(self, result: CognitiveCycleResult) -> None:
         """Persist salient cycle results via the memory interface."""

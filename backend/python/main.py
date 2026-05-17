@@ -2,10 +2,10 @@ import os
 import sys
 import asyncio
 from datetime import datetime
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional, Any
+from typing import Optional, Any, List
 
 # Ensure both root workspace and backend/python are on the path
 backend_python_dir = os.path.dirname(os.path.abspath(__file__))
@@ -34,6 +34,60 @@ async def startup_event():
     
     registry = get_mcp_registry()
     registry.register_local_server("postgres", get_postgres_mcp())
+    
+    # Initialize Sentience Kernel
+    from sentience_kernel.kernel import SentienceKernel
+    global kernel
+    kernel = SentienceKernel()
+    
+    # Wire the Message Bus
+    kernel.subscribe(broadcast_cognitive_event)
+    
+    # Start the continuous loop as a background task
+    async def context_stream():
+        return {"query": "Background cognitive maintenance."}
+        
+    global kernel_task
+    kernel_task = asyncio.create_task(kernel.start(context_stream=context_stream))
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    global kernel
+    if kernel:
+        await kernel.stop()
+    global kernel_task
+    if 'kernel_task' in globals() and kernel_task:
+        kernel_task.cancel()
+
+# ─── WebSocket / Real-time Telemetry ──────────────────────────────────────────
+
+active_connections: List[WebSocket] = []
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """WebSocket for real-time agent updates"""
+    await websocket.accept()
+    active_connections.append(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        active_connections.remove(websocket)
+
+async def broadcast_cognitive_event(event):
+    """Broadcast cognitive event to all connected clients."""
+    if not active_connections:
+        return
+        
+    message = {
+        "type": "cognitive_event",
+        "payload": event.to_dict() if hasattr(event, "to_dict") else str(event)
+    }
+    for connection in active_connections:
+        try:
+            await connection.send_json(message)
+        except Exception:
+            pass
 
 
 # ─── Request / Response Models ─────────────────────────────────────────────────

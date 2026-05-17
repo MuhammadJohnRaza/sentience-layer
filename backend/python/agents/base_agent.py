@@ -20,6 +20,10 @@ import asyncio
 import uuid
 import time
 import logging
+import os
+import sys
+import importlib
+import inspect
 from abc import ABC, abstractmethod
 from typing import Dict, List, Any, Optional, Callable, Union
 from dataclasses import dataclass, field
@@ -482,6 +486,40 @@ Respond with JSON: {{"action": "tool_name", "input": {{}}, "reasoning": "why"}}"
                     "description": f"Built-in skill: {skill_name}",
                     "source": "skill"
                 }
+
+            # Discover custom python tools from the tools/ directory
+            try:
+                # Find the workspace root based on this file's path
+                backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                workspace_root = os.path.dirname(backend_dir)
+                tools_dir = os.path.join(workspace_root, "tools")
+                
+                if os.path.exists(tools_dir):
+                    if tools_dir not in sys.path:
+                        sys.path.insert(0, tools_dir)
+                    if workspace_root not in sys.path:
+                        sys.path.insert(0, workspace_root)
+                        
+                    for filename in os.listdir(tools_dir):
+                        if filename.endswith("_tool.py") and not filename.startswith("__"):
+                            module_name = f"tools.{filename[:-3]}"
+                            try:
+                                module = importlib.import_module(module_name)
+                                for name, obj in inspect.getmembers(module, inspect.isclass):
+                                    if name.endswith("Tool") and name != "Tool":
+                                        tool_instance = obj()
+                                        if hasattr(tool_instance, "execute"):
+                                            tool_name = filename[:-3] # e.g. 'github_tool'
+                                            self.skills[tool_name] = tool_instance.execute
+                                            self.available_tools[tool_name] = {
+                                                "description": obj.__doc__ or f"Integration tool: {name}",
+                                                "source": "custom_tools"
+                                            }
+                                            logger.info(f"Registered custom tool: {tool_name}")
+                            except Exception as module_err:
+                                logger.warning(f"Failed to load tool module {module_name}: {module_err}")
+            except Exception as e:
+                logger.warning(f"Failed to scan custom tools directory: {e}")
 
             logger.info(f"Discovered {len(self.available_tools)} tools")
 
