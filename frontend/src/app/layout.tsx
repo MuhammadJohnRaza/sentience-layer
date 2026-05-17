@@ -1,9 +1,7 @@
-/** * Root Layout */
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/shared/Sidebar";
-import { TopBar } from "@/components/shared/TopBar";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { useStore } from "@/store/useStore";
 const inter = Inter({
@@ -30,7 +28,7 @@ bg-background text-foreground`}
           {" "}
           <div className="flex min-h-screen flex-col bg-background">
             {" "}
-            <Sidebar /> <TopBar />{" "}
+            <Sidebar />{" "}
             <main className="flex-1 p-6"> {children}</main>{" "}
           </div>{" "}
         </ErrorBoundary>{" "}

@@ -5,28 +5,31 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/store/useStore";
 import { NAV_ITEMS } from "@/lib/constants";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useWebSocket } from "@/hooks/useWebSocket";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, notifications, clearNotifications } = useStore();
+  const { isConnected } = useWebSocket();
 
   return (
-    <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b-2 border-border bg-background px-4 text-foreground">
+    <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b-2 border-border bg-background px-4 text-foreground shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
       {/* Left: Logo */}
       <div className="flex items-center gap-2 pr-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-border text-background">
+        <div className="flex h-9 w-9 items-center justify-center rounded-md border-2 border-border bg-border/20 text-primary-foreground shadow-[0_0_15px_rgba(124,58,237,0.5)]">
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
         </div>
-        <span className="text-xl font-bold tracking-tight text-primary-foreground hidden md:block">
-          Sentience Layer
+        <span className="text-xl font-black tracking-wider text-primary-foreground bg-gradient-to-r from-primary-foreground via-amber-200 to-primary-foreground bg-clip-text text-transparent hidden sm:block">
+          SENTIENCE
         </span>
       </div>
 
-      {/* Center: Scrollable Nav */}
-      <nav className="flex-1 overflow-x-auto no-scrollbar">
-        <ul className="flex items-center gap-1 min-w-max px-2">
+      {/* Center: Scrollable Horizontal Nav */}
+      <nav className="flex-1 overflow-x-auto no-scrollbar mx-4">
+        <ul className="flex items-center justify-center gap-2 min-w-max px-2">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -34,10 +37,10 @@ export function Sidebar() {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-all duration-200",
+                    "flex items-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-semibold tracking-wide transition-all duration-300",
                     isActive
-                      ? "text-primary-foreground border-b-2 border-border bg-border/20 shadow-[0_0_10px_rgba(124,58,237,0.3)]"
-                      : "text-muted-foreground hover:bg-border/10 hover:text-foreground",
+                      ? "text-primary-foreground border-2 border-border bg-border/30 shadow-[0_0_15px_rgba(124,58,237,0.4)] scale-105"
+                      : "text-muted-foreground hover:bg-border/10 hover:text-primary-foreground hover:scale-102",
                   )}
                 >
                   {item.label}
@@ -48,15 +51,47 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      {/* Right: Actions */}
-      <div className="flex items-center gap-2 pl-4">
-        <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-border/20">
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg>
-        </Button>
-        <div className="h-8 w-8 rounded-full bg-border/30 border border-border flex items-center justify-center text-primary-foreground">
-          U
+      {/* Right: Actions & Profile */}
+      <div className="flex items-center gap-4 pl-4">
+        {/* Live Status indicator */}
+        <div className="flex items-center gap-2">
+          <div
+            className={cn(
+              "h-2..5 w-2.5 rounded-full animate-pulse",
+              isConnected 
+                ? "bg-primary shadow-[0_0_10px_rgba(124,58,237,0.8)]" 
+                : "bg-destructive shadow-[0_0_10px_rgba(239,68,68,0.8)]"
+            )}
+          />
+          <span className="text-xs font-black tracking-widest text-primary-foreground hidden md:inline">
+            {isConnected ? "LIVE" : "OFFLINE"}
+          </span>
+        </div>
+
+        {/* Notifications */}
+        {notifications.length > 0 && (
+          <div className="relative">
+            <Badge
+              variant="destructive"
+              className="cursor-pointer font-bold border border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/80 shadow-[0_0_10px_rgba(239,68,68,0.5)] animate-bounce"
+              onClick={clearNotifications}
+            >
+              {notifications.length}
+            </Badge>
+          </div>
+        )}
+
+        {/* User Info */}
+        <div className="flex items-center gap-3">
+          <div className="text-right hidden lg:block">
+            <p className="text-sm font-black text-primary-foreground leading-none">{user?.name || "Guest"}</p>
+            <p className="text-[10px] font-semibold text-muted-foreground mt-1 tracking-wider leading-none">
+              {user?.email || "NOT SIGNED IN"}
+            </p>
+          </div>
+          <div className="h-9 w-9 rounded-full bg-border/20 border-2 border-border flex items-center justify-center font-black text-primary-foreground shadow-[0_0_12px_rgba(124,58,237,0.4)] hover:shadow-[0_0_20px_rgba(124,58,237,0.7)] transition-all duration-300 cursor-pointer">
+            {user?.name ? user.name[0].toUpperCase() : "G"}
+          </div>
         </div>
       </div>
     </header>

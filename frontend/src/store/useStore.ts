@@ -11,21 +11,28 @@ import {
   AgentTrace,
 } from "@/types";
 interface AppState {
-  // User user: User | null;
+  // User
+  user: User | null;
   setUser: (user: User | null) => void;
-  // Theme theme:"light" |"dark" |"system";
+  // Theme
+  theme: "light" | "dark" | "system";
   setTheme: (theme: "light" | "dark" | "system") => void;
-  // Sidebar sidebarOpen: boolean;
+  // Sidebar
+  sidebarOpen: boolean;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
-  // Notifications notifications: string[];
+  // Notifications
+  notifications: string[];
   addNotification: (msg: string) => void;
   clearNotifications: () => void;
-  // Global loading isLoading: boolean;
+  // Global loading
+  isLoading: boolean;
   setLoading: (loading: boolean) => void;
-  // Active mission activeMission: string | null;
+  // Active mission
+  activeMission: string | null;
   setActiveMission: (mission: string | null) => void;
-  // Real-time updates lastUpdate: number;
+  // Real-time updates
+  lastUpdate: number;
   bumpUpdate: () => void;
 }
 export const useStore = create<AppState>()(

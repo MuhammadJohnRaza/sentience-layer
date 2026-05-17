@@ -18,30 +18,30 @@ export function RealtimeChart() {
   const max = Math.max(...data);
   const min = Math.min(...data);
   return (
-    <Card className="h-full">
+    <Card className="h-full border-2 border-border/50 bg-card shadow-[0_4px_30px_rgba(0,0,0,0.6)]">
       {" "}
       <CardHeader>
         {" "}
-        <CardTitle>Real-time Activity</CardTitle>{" "}
+        <CardTitle className="text-primary-foreground font-black tracking-wider">Real-Time Cognitive Activity</CardTitle>{" "}
       </CardHeader>{" "}
       <CardContent>
         {" "}
-        <div className="flex items-end gap-1 h-48">
+        <div className="flex items-end gap-1.5 h-48 px-2 border-b border-border/20 pb-1">
           {" "}
           {data.map((value, i) => (
             <div
               key={i}
-              className="flex-1 rounded-t bg-card dark:bg-background transition-all duration-500"
+              className="flex-1 rounded-t bg-gradient-to-t from-primary/10 via-primary/60 to-primary shadow-[0_0_15px_rgba(124,58,237,0.3)] transition-all duration-500 border-x border-t border-primary/40"
               style={{
                 height: `${((value - min) / (max - min || 1)) * 100}%`,
-                opacity: 0.3 + (i / data.length) * 0.7,
+                opacity: 0.4 + (i / data.length) * 0.6,
               }}
             />
           ))}
         </div>{" "}
-        <div className="flex justify-between mt-2 text-xs text-foreground0">
+        <div className="flex justify-between mt-3 text-xs font-bold tracking-widest text-primary-foreground/60">
           {" "}
-          <span>-10m</span> <span>Now</span>{" "}
+          <span>-10M</span> <span>NOW</span>{" "}
         </div>{" "}
       </CardContent>{" "}
     </Card>

@@ -44,7 +44,7 @@ export function MetricsGrid() {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {" "}
       {metrics.map((metric) => (
-        <Card key={metric.label} className="relative overflow-hidden">
+        <Card key={metric.label} className="relative overflow-hidden border-2 border-border/40 bg-card shadow-[0_4px_25px_rgba(0,0,0,0.5)] hover:border-border transition-all duration-300">
           {" "}
           <CardContent className="p-6">
             {" "}
@@ -52,26 +52,28 @@ export function MetricsGrid() {
               {" "}
               <div>
                 {" "}
-                <p className="text-sm font-medium text-foreground0">
+                <p className="text-xs font-black text-muted-foreground tracking-widest uppercase">
                   {metric.label}
                 </p>{" "}
-                <p className="text-2xl font-bold mt-1">{metric.value}</p>{" "}
+                <p className="text-3xl font-black text-primary-foreground mt-2 tracking-tight">
+                  {metric.value}
+                </p>{" "}
               </div>{" "}
               <div
                 className={cn(
-                  "flex items-center rounded-full px-2 py-1 text-xs font-medium",
+                  "flex items-center rounded-full px-2.5 py-1 text-xs font-bold tracking-wide border",
                   metric.trend === "up"
-                    ? "bg-emerald-100 text-emerald-700"
+                    ? "bg-emerald-950/50 text-emerald-400 border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.15)]"
                     : metric.trend === "down"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-border/10 text-slate-700",
+                      ? "bg-rose-950/50 text-rose-400 border-rose-500/20 shadow-[0_0_8px_rgba(244,63,94,0.15)]"
+                      : "bg-border/10 text-muted-foreground border-border/20",
                 )}
               >
                 {" "}
                 {metric.trend === "up"
-                  ? "+"
+                  ? "▲ "
                   : metric.trend === "down"
-                    ? "-"
+                    ? "▼ "
                     : ""}
                 {Math.abs(metric.change)}%{" "}
               </div>{" "}
