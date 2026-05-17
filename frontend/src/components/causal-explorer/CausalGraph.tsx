@@ -7,7 +7,7 @@ export function CausalGraph() {
   const [nodes, setNodes] = useState<CausalNode[]>([]);
   const [edges, setEdges] = useState<CausalEdge[]>([]);
   useEffect(() => {
-    api.getCausalGraph().then((data) => {
+    api.getCausalGraph().then((data: any) => {
       setNodes(data.nodes || []);
       setEdges(data.edges || []);
     });

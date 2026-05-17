@@ -214,6 +214,31 @@ class BaseAgent(ABC):
             # Final synthesis
             final_result = await self._synthesize_result(goal, self.current_reasoning_chain)
 
+            # Submit reasoning trace back to Antigravity
+            try:
+                trace_data = {
+                    "agent_id": self.agent_id,
+                    "goal": goal,
+                    "execution_time_ms": (time.time() - start_time) * 1000,
+                    "confidence": self._calculate_confidence(),
+                    "steps": [
+                        {
+                            "step": step.step_number,
+                            "thought": step.thought,
+                            "action": step.action,
+                            "action_input": step.action_input,
+                            "observation": step.observation,
+                            "confidence": step.confidence
+                        }
+                        for step in self.current_reasoning_chain
+                    ],
+                    "tools_used": tools_used,
+                    "success": True
+                }
+                await self.antigravity._post("/traces/submit", trace_data)
+            except Exception as trace_err:
+                logger.warning(f"Failed to submit agent trace to Antigravity: {trace_err}")
+
             return AgentResult(
                 success=True,
                 data=final_result,
@@ -356,6 +381,20 @@ Respond with JSON: {{"action": "tool_name", "input": {{}}, "reasoning": "why"}}"
     ) -> str:
         """Execute an action (tool call)"""
         try:
+            # Route specific tools through Antigravity Tool Use API
+            if action_name in ("memory_search", "vault_search"):
+                try:
+                    logger.info(f"Routing tool '{action_name}' through Antigravity Tool Use API")
+                    antigravity_response = await self.antigravity._post("/tools/execute", {
+                        "tool_name": action_name,
+                        "parameters": action_input,
+                        "agent_id": self.agent_id
+                    })
+                    if "result" in antigravity_response:
+                        return str(antigravity_response["result"])
+                except Exception as tool_err:
+                    logger.warning(f"Antigravity Tool Use failed for {action_name}: {tool_err}. Falling back to local execution.")
+
             # Check if it's a registered skill
             if action_name in self.skills:
                 result = await self.skills[action_name](**action_input)

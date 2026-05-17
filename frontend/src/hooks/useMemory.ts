@@ -8,7 +8,7 @@ export function useMemory() {
   const [selectedNode, setSelectedNode] = useState<MemoryNode | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
-    api.getMemory().then((data) => {
+    api.getMemory().then((data: any) => {
       setNodes(data);
       setIsLoading(false);
     });
@@ -16,7 +16,7 @@ export function useMemory() {
   const searchMemory = useCallback(async (query: string) => {
     setIsLoading(true);
     try {
-      const results = await api.searchMemory(query);
+      const results = (await api.searchMemory(query)) as any;
       setNodes(results);
     } finally {
       setIsLoading(false);

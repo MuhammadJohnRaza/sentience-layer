@@ -40,7 +40,7 @@ export function SpotChat() {
     setIsLoading(true);
 
     try {
-      const res = await api.sendMessage(content, { agent_id: "critic" });
+      const res = (await api.sendMessage(content, { agent_id: "critic" })) as any;
       const assistantMsg: SpotMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",

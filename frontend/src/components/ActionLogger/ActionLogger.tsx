@@ -1,3 +1,3 @@
-export function ActionLogger() {
-  return <div>Action Logger Component</div>;
-}
+"use client";
+
+export { ActionLogger } from "../ActionLogger";

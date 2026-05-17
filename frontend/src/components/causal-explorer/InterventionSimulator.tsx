@@ -53,9 +53,8 @@ export function InterventionSimulator() {
             onChange={(e) => setTarget(e.target.value)}
           />{" "}
         </div>{" "}
-        <Button onClick={simulate} isLoading={isLoading} className="w-full">
-          {" "}
-          Simulate Intervention{" "}
+        <Button onClick={simulate} disabled={isLoading} className="w-full">
+          {isLoading ? "Simulating..." : "Simulate Intervention"}
         </Button>{" "}
         {result && (
           <div className="rounded-lg bg-background p-4 dark:bg-card space-y-2">

@@ -42,14 +42,31 @@ class ChatRequest(BaseModel):
     message: str
     context: Optional[Any] = None
 
+class AgentHandoffStep(BaseModel):
+    agent_id: str
+    agent_name: str
+    emoji: str
+    input_summary: str
+    output_summary: str
+    confidence: float
+    duration_ms: float
+    status: str = "success"
+
 class ChatResponse(BaseModel):
     content: str
+    key_finding: Optional[str] = None
     intent: Optional[str] = None
     confidence: Optional[float] = None
+    severity: Optional[str] = None          # CRITICAL | HIGH | MEDIUM | LOW
+    evidence: Optional[list] = None
+    actions: Optional[list] = None
     sources: Optional[list] = None
     suggested_actions: Optional[list] = None
     agent_used: Optional[str] = None
+    agent_chain: Optional[list] = None      # List[AgentHandoffStep]
     reasoning_steps: Optional[int] = None
+    priority: Optional[str] = None
+    total_duration_ms: Optional[float] = None
 
 # ─── Root & Health ─────────────────────────────────────────────────────────────
 
@@ -93,19 +110,90 @@ SESSION_MEMORY = []
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest):
-    """Route user message through a cognitive agent ReAct loop."""
+    """Route user message through the 3-agent SwarmOrchestrator or a named single agent."""
     from datetime import datetime
     import importlib
 
-    # Resolve active agent type and custom system prompt directive from client context
-    agent_id = "critic"
-    system_prompt = "You are the swarm's Critic Agent. Your objective is to thoroughly stress-test every idea, proposal, and document, highlighting architectural blindspots, severe edge cases, and missing failure modes with constructive skepticism."
-    
-    if req.context and isinstance(req.context, dict):
-        agent_id = req.context.get("agent_id", "critic")
-        system_prompt = req.context.get("system_prompt", system_prompt)
+    # Resolve agent selection and custom system prompt from client context
+    agent_id = "swarm"  # default: use full 3-agent chain
+    system_prompt = None
 
-    # Directory mapping representing all 18 cognitive agents in the system
+    if req.context and isinstance(req.context, dict):
+        agent_id = req.context.get("agent_id", "swarm")
+        system_prompt = req.context.get("system_prompt", None)
+
+    # Build document context from uploaded vault files
+    doc_contexts = []
+    for doc in UPLOADED_DOCUMENTS:
+        if "content" in doc and doc["content"] and doc["content"].strip():
+            doc_contexts.append(f"--- DOCUMENT: {doc['name']} ---\n{doc['content']}\n")
+    doc_context_str = "\n".join(doc_contexts)
+
+    # ── DEFAULT: SwarmOrchestrator (Critic → Consensus → Playbook) ────────
+    if agent_id in ("swarm", "critic", ""):
+        try:
+            from swarm_orchestrator import SwarmOrchestrator
+        except ImportError:
+            from backend.python.swarm_orchestrator import SwarmOrchestrator
+
+        orchestrator = SwarmOrchestrator(system_prompt=system_prompt)
+
+        try:
+            result = await orchestrator.run(query=req.message, doc_context=doc_context_str)
+
+            # Format rich response text
+            response_text = f"{result.key_finding}\n\n{result.insight}"
+            if result.actions:
+                response_text += "\n\n🎯 Actions:\n" + "\n".join(f"• {a}" for a in result.actions)
+
+            agent_chain_dicts = [
+                {
+                    "agent_id": s.agent_id,
+                    "agent_name": s.agent_name,
+                    "emoji": s.emoji,
+                    "input_summary": s.input_summary,
+                    "output_summary": s.output_summary,
+                    "confidence": round(s.confidence, 3),
+                    "duration_ms": round(s.duration_ms, 1),
+                    "status": s.status,
+                }
+                for s in result.agent_chain
+            ]
+
+            response_obj = ChatResponse(
+                content=response_text,
+                key_finding=result.key_finding,
+                intent="swarm_reasoning",
+                confidence=result.confidence,
+                severity=result.severity,
+                evidence=result.evidence,
+                actions=result.actions,
+                sources=[],
+                suggested_actions=result.actions[:2] if result.actions else [],
+                agent_used="SwarmOrchestrator",
+                agent_chain=agent_chain_dicts,
+                reasoning_steps=len(result.agent_chain),
+                priority=result.priority,
+                total_duration_ms=result.total_duration_ms,
+            )
+
+            SESSION_MEMORY.append({
+                "id": f"session_{len(SESSION_MEMORY) + 1}",
+                "timestamp": datetime.utcnow().strftime("%b %d, %I:%M %p"),
+                "iso_time": datetime.utcnow().isoformat(),
+                "user": req.message,
+                "assistant": response_text,
+                "confidence": result.confidence,
+                "severity": result.severity,
+            })
+
+            return response_obj
+
+        except Exception as e:
+            print(f"SwarmOrchestrator failed: {e}. Falling back to single agent.")
+            agent_id = "critic"  # fall through to single-agent path
+
+    # ── SINGLE NAMED AGENT FALLBACK ───────────────────────────────────────
     agent_map = {
         "critic": ("agents.critic_agent", "CriticAgent"),
         "personalization": ("agents.personalization_agent", "PersonalizationAgent"),
@@ -134,34 +222,21 @@ async def chat(req: ChatRequest):
         agent_class = getattr(module, class_name)
         agent = agent_class(config={})
     except Exception as e:
-        print(f"Dynamic agent dispatch failed for '{agent_id}': {e}. Swapping fallback to CriticAgent.")
+        print(f"Dynamic agent dispatch failed for '{agent_id}': {e}. Fallback CriticAgent.")
         from agents.critic_agent import CriticAgent
         agent = CriticAgent(config={})
         class_name = "CriticAgent"
 
     agent.max_reasoning_steps = 2
 
-    # Parse and feed all uploaded vault document content as multimodal RAG context
-    doc_contexts = []
-    for doc in UPLOADED_DOCUMENTS:
-        if "content" in doc and doc["content"] and doc["content"].strip():
-            doc_contexts.append(f"--- DOCUMENT: {doc['name']} ---\n{doc['content']}\n")
-
-    # Structure full prompt context including System Directive, RAG data, and Query
-    full_prompt = f"System Directive: {system_prompt}\n\n"
+    full_prompt = f"System Directive: {system_prompt}\n\n" if system_prompt else ""
     if doc_contexts:
-        full_prompt += (
-            "The user has uploaded the following files to the Memory Vault. "
-            "Please analyze their content and answer the user query based on this context:\n\n"
-            + "\n".join(doc_contexts)
-            + "\n\n"
-        )
+        full_prompt += "Vault Documents:\n" + doc_context_str + "\n\n"
     full_prompt += f"User Query: {req.message}"
 
     try:
         result = await agent.reason_and_act(full_prompt)
 
-        # Build the response text from the reasoning chain
         thoughts = []
         if result.reasoning_chain:
             for step in result.reasoning_chain:
@@ -170,24 +245,32 @@ async def chat(req: ChatRequest):
 
         response_text = "\n\n".join(thoughts) if thoughts else (
             result.data.get("response", "") if isinstance(result.data, dict)
-            else "I processed your request through the cognitive kernel."
+            else f"{class_name} processed your request."
         )
 
         if not response_text.strip():
-            response_text = f"Cognitive reasoning complete by {class_name}. The kernel has processed your input."
+            response_text = f"Reasoning complete by {class_name}."
 
         response_obj = ChatResponse(
             content=response_text,
-            intent="reasoning",
+            intent="single_agent_reasoning",
             confidence=result.confidence,
+            severity="MEDIUM",
+            evidence=[],
+            actions=[],
             sources=[],
-            suggested_actions=[
-                "Explore causal relationships",
-                "Run adversarial test",
-                "Analyze economic impact",
-                "Check ethical constraints"
-            ],
+            suggested_actions=["Run full swarm analysis", "Explore causal chain"],
             agent_used=class_name,
+            agent_chain=[{
+                "agent_id": agent_id,
+                "agent_name": class_name,
+                "emoji": "🤖",
+                "input_summary": req.message[:80],
+                "output_summary": response_text[:100],
+                "confidence": result.confidence or 0.7,
+                "duration_ms": result.execution_time * 1000 if result.execution_time else 0,
+                "status": "success"
+            }],
             reasoning_steps=len(result.reasoning_chain) if result.reasoning_chain else 0
         )
 
@@ -544,42 +627,224 @@ def insights():
         }
     ]
 
+# ─── Playbook Generation with Robust Redis/Celery Fallback ────────────────────
+
+import uuid
+import threading
+
+IN_MEMORY_TASKS = {}
+
+def run_synchronous_task_fallback(task_id: str, session_memory: list, uploaded_documents: list):
+    try:
+        steps = [
+            "🔍 Inspecting active communication logs...",
+            "📁 Parsing uploaded vault documents & memory layers...",
+            "🧠 Constructing multi-agent critical path dependency network...",
+            "⚡ Finalizing 30-day autonomous action plan..."
+        ]
+        total_steps = len(steps)
+        for idx, step_msg in enumerate(steps):
+            IN_MEMORY_TASKS[task_id] = {
+                "state": "PROGRESS",
+                "current_step": idx,
+                "total_steps": total_steps,
+                "status": step_msg
+            }
+            time.sleep(0.5)
+
+        combined_context = ""
+        for s in session_memory:
+            combined_context += f" {s.get('user', '')} {s.get('assistant', '')}"
+        for u in uploaded_documents:
+            combined_context += f" {u.get('name', '')} {u.get('title', '')}"
+        combined_context = combined_context.lower()
+
+        focus_area = "General Swarm Intelligence Orchestration"
+        if any(k in combined_context for k in ["security", "quarantine", "ethics", "lockdown"]):
+            focus_area = "Ethical Security & Swap Containment Protocols"
+        elif any(k in combined_context for k in ["economic", "hedge", "market", "roi", "cost"]):
+            focus_area = "Value Orchestration & Financial Hedging Swarm"
+        elif any(k in combined_context for k in ["mcp", "database", "postgres", "sql"]):
+            focus_area = "Relational Postgres Database MCP Systemization"
+        elif any(k in combined_context for k in ["dream", "dreamscape", "sleep", "offline"]):
+            focus_area = "Offline Dream Consolidation & Logic Mapping"
+
+        playbook = {
+            "focus_area": focus_area,
+            "source_sessions_analyzed": len(session_memory),
+            "source_documents_analyzed": len(uploaded_documents),
+            "generated_at": datetime.utcnow().strftime("%b %d, %I:%M %p"),
+            "tasks": [
+                {
+                    "id": "task_1",
+                    "day": 1,
+                    "phase": "Foundation",
+                    "title": f"Boot swarm logic in {focus_area} mode",
+                    "description": "Initialize multi-agent consensus nodes to align critical pathways and evaluate system telemetry.",
+                    "agent": "ConsensusAgent",
+                    "confidence": 0.95,
+                    "status": "completed"
+                },
+                {
+                    "id": "task_2",
+                    "day": 3,
+                    "phase": "Foundation",
+                    "title": "Sanity check Postgres MCP schemas",
+                    "description": "Map SQLite in-memory relational registries using the postgres_list_tables tool to confirm tool registries.",
+                    "agent": "CriticAgent",
+                    "confidence": 0.98,
+                    "status": "completed"
+                },
+                {
+                    "id": "task_3",
+                    "day": 5,
+                    "phase": "Foundation",
+                    "title": "Execute local database stress audits",
+                    "description": "Audit connections to the relational MCP backend and execute test queries under high workload simulations.",
+                    "agent": "AdversarialTestAgent",
+                    "confidence": 0.89,
+                    "status": "pending"
+                },
+                {
+                    "id": "task_4",
+                    "day": 8,
+                    "phase": "Integration",
+                    "title": "Establish relational logic links",
+                    "description": "Connect memory vault traces and chat sessions with causal inference layers using advanced ReAct pipelines.",
+                    "agent": "CausalInferenceAgent",
+                    "confidence": 0.91,
+                    "status": "pending"
+                },
+                {
+                    "id": "task_5",
+                    "day": 12,
+                    "phase": "Integration",
+                    "title": "Establish secondary consensus syncs",
+                    "description": "Orchestrate real-time state broadcasts across frontend and mobile nodes to maintain swarming database integrity.",
+                    "agent": "ConsensusAgent",
+                    "confidence": 0.94,
+                    "status": "pending"
+                },
+                {
+                    "id": "task_6",
+                    "day": 20,
+                    "phase": "Optimization",
+                    "title": "Deploy high-fidelity quarantine fallbacks",
+                    "description": "Establish automated container rollbacks and adversarial isolation protocols in response to edge anomalies.",
+                    "agent": "AdversarialTestAgent",
+                    "confidence": 0.97,
+                    "status": "pending"
+                },
+                {
+                    "id": "task_7",
+                    "day": 30,
+                    "phase": "Optimization",
+                    "title": "Consolidate neural weights to offline cache",
+                    "description": "Run dreamscape analytical consolidations to optimize vector retrieval speeds in future operations.",
+                    "agent": "CausalInferenceAgent",
+                    "confidence": 0.93,
+                    "status": "pending"
+                }
+            ]
+        }
+        IN_MEMORY_TASKS[task_id] = {
+            "state": "SUCCESS",
+            "progress": 100,
+            "result": playbook
+        }
+    except Exception as ex:
+        logger.error(f"Fallback playbook task failed: {ex}")
+        IN_MEMORY_TASKS[task_id] = {
+            "state": "FAILURE",
+            "progress": 0,
+            "error": str(ex)
+        }
+
 @app.post("/api/playbook/generate")
 def generate_playbook():
-    # Trigger Celery task asynchronously
-    from celery_app import generate_playbook_task
-    task = generate_playbook_task.delay(SESSION_MEMORY, UPLOADED_DOCUMENTS)
-    return {
-        "status": "pending",
-        "task_id": task.id
-    }
+    try:
+        # Try triggering Celery task asynchronously
+        from celery_app import generate_playbook_task
+        task = generate_playbook_task.delay(SESSION_MEMORY, UPLOADED_DOCUMENTS)
+        return {
+            "status": "pending",
+            "task_id": task.id
+        }
+    except Exception as celery_err:
+        logger.warning(f"Celery generate_playbook failed, falling back to synchronous background thread: {celery_err}")
+        task_id = str(uuid.uuid4())
+        IN_MEMORY_TASKS[task_id] = {
+            "state": "PENDING",
+            "progress": 0,
+            "status": "Initializing swarm operator consensus..."
+        }
+        thread = threading.Thread(
+            target=run_synchronous_task_fallback,
+            args=(task_id, SESSION_MEMORY, UPLOADED_DOCUMENTS),
+            daemon=True
+        )
+        thread.start()
+        return {
+            "status": "pending",
+            "task_id": task_id
+        }
 
 @app.get("/api/playbook/tasks/{task_id}")
 def get_playbook_task_status(task_id: str):
-    from celery_app import celery_app
-    task = celery_app.AsyncResult(task_id)
-    
-    if task.state == "PENDING":
-        return {"state": "PENDING", "progress": 0, "status": "Initializing swarm operator consensus..."}
-    elif task.state == "PROGRESS":
-        return {
-            "state": "PROGRESS", 
-            "progress": int((task.info.get("current_step", 0) + 1) / task.info.get("total_steps", 4) * 100),
-            "status": task.info.get("status", "Analyzing memory context...")
-        }
-    elif task.state == "SUCCESS":
-        return {
-            "state": "SUCCESS",
-            "progress": 100,
-            "result": task.result
-        }
-    elif task.state == "FAILURE":
-        return {
-            "state": "FAILURE",
-            "progress": 0,
-            "error": str(task.info)
-        }
-    return {"state": task.state, "progress": 50, "status": "Synthesizing..."}
+    # Check in-memory task registry first
+    if task_id in IN_MEMORY_TASKS:
+        task_data = IN_MEMORY_TASKS[task_id]
+        if task_data["state"] == "PENDING":
+            return {"state": "PENDING", "progress": 0, "status": task_data.get("status", "Initializing...")}
+        elif task_data["state"] == "PROGRESS":
+            return {
+                "state": "PROGRESS",
+                "progress": int((task_data.get("current_step", 0) + 1) / task_data.get("total_steps", 4) * 100),
+                "status": task_data.get("status", "Analyzing memory context...")
+            }
+        elif task_data["state"] == "SUCCESS":
+            return {
+                "state": "SUCCESS",
+                "progress": 100,
+                "result": task_data["result"]
+            }
+        elif task_data["state"] == "FAILURE":
+            return {
+                "state": "FAILURE",
+                "progress": 0,
+                "error": task_data.get("error", "Unknown error")
+            }
+
+    # Query Celery registry
+    try:
+        from celery_app import celery_app
+        task = celery_app.AsyncResult(task_id)
+        
+        if task.state == "PENDING":
+            return {"state": "PENDING", "progress": 0, "status": "Initializing swarm operator consensus..."}
+        elif task.state == "PROGRESS":
+            return {
+                "state": "PROGRESS", 
+                "progress": int((task.info.get("current_step", 0) + 1) / task.info.get("total_steps", 4) * 100),
+                "status": task.info.get("status", "Analyzing memory context...")
+            }
+        elif task.state == "SUCCESS":
+            return {
+                "state": "SUCCESS",
+                "progress": 100,
+                "result": task.result
+            }
+        elif task.state == "FAILURE":
+            return {
+                "state": "FAILURE",
+                "progress": 0,
+                "error": str(task.info)
+            }
+    except Exception as err:
+        logger.error(f"Failed to query celery status: {err}")
+        return {"state": "FAILURE", "progress": 0, "error": f"Task not found or query error: {str(err)}"}
+
+    return {"state": "PENDING", "progress": 50, "status": "Synthesizing..."}
 
 # ─── Entry Point ───────────────────────────────────────────────────────────────
 

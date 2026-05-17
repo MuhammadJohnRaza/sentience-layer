@@ -32,7 +32,6 @@ export function ChatInterface() {
   // Agent Swarm Selector and Custom System Prompt States
   const [selectedAgent, setSelectedAgent] = useState("critic");
   const [showControls, setShowControls] = useState(false);
-  const [isPromptDrawerOpen, setIsPromptDrawerOpen] = useState(false);
   const [customSystemPrompts, setCustomSystemPrompts] = useState<Record<string, string>>({
     critic: "You are the swarm's Critic Agent. Your objective is to thoroughly stress-test every idea, proposal, and document, highlighting architectural blindspots, severe edge cases, and missing failure modes with constructive skepticism.",
     personalization: "You are the Personalization Agent. Your goal is to adapt all swarm outputs to the user's explicit profile, preferred vocabulary, expertise level, and historical interaction telemetry.",

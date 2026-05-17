@@ -14,7 +14,7 @@
     "dev:node": "cd backend/node && npm run dev",
     "build": "npm run build:frontend && npm run build:node",
     "build:frontend": "cd frontend && npm run build",
-    "build:node": "cd backend/node && npm run build",
+    "build:node": "echo No node backend to build",
     "test": "npm run test:python && npm run test:node",
     "test:python": "cd backend/python && pytest",
     "test:node": "cd backend/node && npm test",

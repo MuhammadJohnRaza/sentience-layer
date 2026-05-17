@@ -91,10 +91,10 @@ export function ActionPanel() {
                 <Button
                   size="sm"
                   onClick={() => execute(action.id)}
-                  isLoading={executing === action.id}
+                  disabled={executing === action.id}
                 >
                   {" "}
-                  Execute{" "}
+                  {executing === action.id ? "Executing..." : "Execute"}{" "}
                 </Button>
               )}
             </div>{" "}

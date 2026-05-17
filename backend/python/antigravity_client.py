@@ -143,7 +143,7 @@ class AntigravityClient:
 
     # ==================== GENERATE / LLM CALL ====================
 
-    async def generate(self, prompt: str, model: str = "openrouter/free") -> Any:
+    async def generate(self, prompt: str, model: str = "google/gemini-2.5-flash", max_tokens: int = 1500) -> Any:
         """Call OpenRouter or another LLM for text generation"""
         import time
         start_time = time.time()
@@ -192,8 +192,10 @@ class AntigravityClient:
                     }
                 )
             
-            # Use the requested model (defaults to openrouter/free for high-fidelity free routing)
+            # Use the requested model (defaults to google/gemini-2.5-flash)
             target_model = model
+            if target_model == "openrouter/free":
+                target_model = "google/gemini-2.5-flash"
             
             # OpenAI / OpenRouter standard chat completions endpoint
             url = f"{self.config.base_url}/chat/completions"
@@ -201,10 +203,11 @@ class AntigravityClient:
                 "model": target_model,
                 "messages": [
                     {"role": "user", "content": prompt}
-                ]
+                ],
+                "max_tokens": max_tokens
             }
             
-            logger.info(f"Sending completion request to: {url} with model {target_model}")
+            logger.info(f"Sending completion request to: {url} with model {target_model} and max_tokens {max_tokens}")
             async with self._session.post(url, json=payload) as resp:
                 latency = (time.time() - start_time) * 1000
                 if resp.status == 200:

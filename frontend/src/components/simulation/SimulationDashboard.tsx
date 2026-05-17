@@ -15,7 +15,7 @@ export function SimulationDashboard() {
     if (!actionId) return;
     setIsSimulating(true);
     try {
-      const data = await api.simulateAction(actionId);
+      const data = (await api.simulateAction(actionId)) as any;
       setResult(data);
     } catch (error) {
       console.error("Simulation failed:", error);
@@ -44,10 +44,8 @@ export function SimulationDashboard() {
             <Button
               onClick={runSimulation}
               disabled={isSimulating}
-              isLoading={isSimulating}
             >
-              {" "}
-              Simulate{" "}
+              {isSimulating ? "Simulating..." : "Simulate"}
             </Button>{" "}
           </div>{" "}
         </CardContent>{" "}

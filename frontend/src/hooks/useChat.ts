@@ -22,10 +22,10 @@ export function useChat() {
       setIsLoading(true);
       try {
         abortRef.current = new AbortController();
-        const response = await api.sendMessage(content, {
+        const response = (await api.sendMessage(content, {
           history: messages.slice(-10),
           ...customContext,
-        });
+        })) as any;
         const assistantMsg: Message = {
           id: generateId(),
           role: "assistant",
@@ -34,9 +34,16 @@ export function useChat() {
           metadata: {
             intent: response.intent,
             confidence: response.confidence,
+            severity: response.severity,
+            evidence: response.evidence,
+            actions: response.actions,
+            agentChain: response.agent_chain,
+            keyFinding: response.key_finding,
+            priority: response.priority,
+            totalDurationMs: response.total_duration_ms,
+            agentUsed: response.agent_used,
             sources: response.sources,
-            actions: response.suggested_actions,
-          },
+          } as any,
         };
         setMessages((prev) => [...prev, assistantMsg]);
         return assistantMsg;
