@@ -245,8 +245,9 @@ def dream_reports():
             "summary": "Optimized indices on cognitive_states table and verified integrity.",
             "coherence": 0.94,
             "sleepState": "REM",
-            "timestamp": "May 17, 06:10 PM",
-            "insights": ["Seeding database results in 40% faster tool execution speeds."]
+            "timestamp": "2026-05-17T18:10:00Z",
+            "insightsDiscovered": ["Seeding database results in 40% faster tool execution speeds."],
+            "schemasCreated": ["cognitive_states", "vault_metadata"]
         }
     ]
 

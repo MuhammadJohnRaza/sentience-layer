@@ -39,12 +39,10 @@ export function DreamStream() {
                   {new Date(report.timestamp).toLocaleDateString()}
                 </Badge>{" "}
                 <p className="text-xs">
-                  {report.insightsDiscovered.length}
-                  insights
+                  {(report.insightsDiscovered || []).length} insights
                 </p>{" "}
                 <p className="text-xs text-foreground0">
-                  {report.schemasCreated.length}
-                  schemas
+                  {(report.schemasCreated || []).length} schemas
                 </p>{" "}
               </div>
             ))}
