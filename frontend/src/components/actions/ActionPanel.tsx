@@ -56,7 +56,7 @@ export function ActionPanel() {
             <p className="text-sm text-slate-600">{action.description}</p>{" "}
             <div className="space-y-2">
               {" "}
-              {action.steps.map((step) => (
+              {(action.steps || []).map((step) => (
                 <div key={step.id} className="flex items-center gap-2">
                   {" "}
                   <div

@@ -270,19 +270,29 @@ def get_actions():
     return [
         {
             "id": "action-1",
-            "name": "Audit System Readiness",
+            "title": "Audit System Readiness",
             "description": "Perform relational database schema sanity checks and verify MCP registrations.",
             "category": "diagnostic",
             "status": "pending",
-            "impact": "low"
+            "impactScore": 85,
+            "createdAt": "2026-05-17T18:00:00Z",
+            "steps": [
+                {"id": "step1", "description": "Scan active local DB ports", "status": "completed"},
+                {"id": "step2", "description": "Verify Postgres MCP status", "status": "completed"}
+            ]
         },
         {
             "id": "action-2",
-            "name": "Run Opportunity Scan",
+            "title": "Run Opportunity Scan",
             "description": "Trigger multi-agent ReAct cognitive cycles to uncover causal synergies.",
             "category": "reasoning",
             "status": "pending",
-            "impact": "high"
+            "impactScore": 95,
+            "createdAt": "2026-05-17T18:15:00Z",
+            "steps": [
+                {"id": "step3", "description": "Initialize agent reasoning cycles", "status": "pending"},
+                {"id": "step4", "description": "Map local relational associations", "status": "pending"}
+            ]
         }
     ]
 
