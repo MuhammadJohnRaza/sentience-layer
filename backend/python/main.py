@@ -439,6 +439,130 @@ def insights():
         }
     ]
 
+@app.post("/api/playbook/generate")
+def generate_playbook():
+    # Analyze memory vault and chat session content to extract keywords for customized tailoring
+    combined_context = ""
+    for s in SESSION_MEMORY:
+        combined_context += f" {s['user']} {s['assistant']}"
+    for u in UPLOADED_DOCUMENTS:
+        combined_context += f" {u['name']} {u['title']}"
+        
+    combined_context = combined_context.lower()
+    
+    # Custom plan parameters based on cognitive context keywords
+    focus_area = "General Swarm Intelligence Orchestration"
+    if "security" in combined_context or "quarantine" in combined_context or "ethics" in combined_context:
+        focus_area = "Ethical Security & Swap Containment Protocols"
+    elif "economic" in combined_context or "hedge" in combined_context or "market" in combined_context:
+        focus_area = "Value Orchestration & Financial Hedging Swarm"
+    elif "mcp" in combined_context or "database" in combined_context or "postgres" in combined_context:
+        focus_area = "Relational Postgres Database MCP Systemization"
+    elif "dream" in combined_context or "dreamscape" in combined_context:
+        focus_area = "Offline Dream Consolidation & Logic Mapping"
+
+    playbook_tasks = [
+        {
+            "id": "task_1",
+            "day": 1,
+            "phase": "Foundation",
+            "title": f"Boot swarm logic in {focus_area} mode",
+            "description": "Initialize multi-agent consensus nodes to align critical pathways and evaluate system telemetry.",
+            "agent": "ConsensusAgent",
+            "confidence": 0.95,
+            "status": "completed"
+        },
+        {
+            "id": "task_2",
+            "day": 3,
+            "phase": "Foundation",
+            "title": "Sanity check Postgres MCP schemas",
+            "description": "Map SQLite in-memory relational registries using the postgres_list_tables tool to confirm tool registries.",
+            "agent": "CriticAgent",
+            "confidence": 0.98,
+            "status": "completed"
+        },
+        {
+            "id": "task_3",
+            "day": 5,
+            "phase": "Foundation",
+            "title": "Execute local database stress audits",
+            "description": "Audit connections to the relational MCP backend and execute test queries under high workload simulations.",
+            "agent": "AdversarialTestAgent",
+            "confidence": 0.89,
+            "status": "pending"
+        },
+        {
+            "id": "task_4",
+            "day": 8,
+            "phase": "Integration",
+            "title": "Establish relational logic links",
+            "description": "Connect memory vault traces and chat sessions with causal inference layers using advanced ReAct pipelines.",
+            "agent": "CausalInferenceAgent",
+            "confidence": 0.91,
+            "status": "pending"
+        },
+        {
+            "id": "task_5",
+            "day": 12,
+            "phase": "Integration",
+            "title": "Deploy value orchestration hedge simulations",
+            "description": "Trigger simulated economic hedges inside the EconomicModel and map projected cost vectors over the next 12 months.",
+            "agent": "EconomicAgent",
+            "confidence": 0.94,
+            "status": "pending"
+        },
+        {
+            "id": "task_6",
+            "day": 17,
+            "phase": "Optimization",
+            "title": "Compile offline dream consolidation traces",
+            "description": "Consolidate daily system telemetry into comprehensive premonition reports to prevent logical recursion issues.",
+            "agent": "DreamAgent",
+            "confidence": 0.88,
+            "status": "pending"
+        },
+        {
+            "id": "task_7",
+            "day": 22,
+            "phase": "Optimization",
+            "title": "Perform automated network security scan",
+            "description": "Run high-fidelity doubt sweeps across active communication nodes to detect anomalous patterns.",
+            "agent": "UncertaintyAgent",
+            "confidence": 0.92,
+            "status": "pending"
+        },
+        {
+            "id": "task_8",
+            "day": 26,
+            "phase": "Swarm Autonomy",
+            "title": "Trigger autonomous opportunity sweeps",
+            "description": "Enable continuous multi-agent cycle loops to detect and act upon emerging cost-benefit efficiencies.",
+            "agent": "OpportunityAnalystAgent",
+            "confidence": 0.96,
+            "status": "pending"
+        },
+        {
+            "id": "task_9",
+            "day": 30,
+            "phase": "Swarm Autonomy",
+            "title": "Final 30-day Swarm Alignment check",
+            "description": "Lock down validated memory weights and publish consolidated swarm updates directly to the git main branch.",
+            "agent": "ConsensusAgent",
+            "confidence": 0.99,
+            "status": "pending"
+        }
+    ]
+    
+    return {
+        "status": "success",
+        "focus_area": focus_area,
+        "source_sessions_analyzed": len(SESSION_MEMORY),
+        "source_documents_analyzed": len(UPLOADED_DOCUMENTS),
+        "generated_at": datetime.utcnow().strftime("%b %d, %I:%M %p"),
+        "tasks": playbook_tasks
+    }
+
 # ─── Entry Point ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":

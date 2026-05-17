@@ -95,6 +95,12 @@ export const api = {
       body: formData,
     }),
 
+  // Playbook
+  generatePlaybook: () =>
+    fetchApi("/api/playbook/generate", {
+      method: "POST",
+    }),
+
   // Health
   health: () => fetchApi("/api/health"),
 };
