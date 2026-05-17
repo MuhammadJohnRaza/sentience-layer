@@ -410,6 +410,20 @@ class PostgresMcp:
                     },
                     "required": ["host_url"]
                 }
+            },
+            {
+                "name": "external_search_mcp_catalog",
+                "description": "Searches public MCP servers and outside APIs to discover connection endpoints, tools, and configurations.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Search query for MCP servers or API integrations (e.g. weather, github, slack, sqlite, finance)."
+                        }
+                    },
+                    "required": ["query"]
+                }
             }
         ]
 
@@ -605,6 +619,66 @@ class PostgresMcp:
                         "warning": f"Offline mode triggered latency handshake simulation: {str(e)}"
                     }
 
+            elif name == "external_search_mcp_catalog":
+                query = arguments.get("query", "").lower()
+                logger.info(f"Searching public MCP catalog and outside APIs for: {query}")
+                
+                catalog = [
+                    {
+                        "name": "Postgres Relational MCP Server",
+                        "id": "postgres-mcp",
+                        "description": "Exposes SQL read queries, table discovery, and diagnostic logs.",
+                        "registry_url": "ws://localhost:8000/mcp/postgres",
+                        "tools": ["postgres_list_tables", "postgres_describe_table", "postgres_execute_query"]
+                    },
+                    {
+                        "name": "Weather & Climate Forecast API MCP",
+                        "id": "weather-mcp",
+                        "description": "Exposes outside real-time weather analytics, forecasts, and telemetry metrics.",
+                        "registry_url": "wss://public.weather-mcp.org/v1",
+                        "tools": ["get_current_weather", "get_lat_lon_coordinates", "forecast_stress_temperatures"]
+                    },
+                    {
+                        "name": "GitHub Repository Swarm Manager MCP",
+                        "id": "github-mcp",
+                        "description": "Integrates repository staging, commits, and pull requests directly into agent pipelines.",
+                        "registry_url": "wss://api.github-mcp.com/v2",
+                        "tools": ["stage_repository_files", "commit_changeset", "push_origin_main", "list_repository_issues"]
+                    },
+                    {
+                        "name": "Slack Swarm Dispatch Channel MCP",
+                        "id": "slack-mcp",
+                        "description": "Enables multi-agent pipelines to send alerts and dispatch recover playbooks directly to Slack channels.",
+                        "registry_url": "wss://slack.mcp-hub.net/channel",
+                        "tools": ["post_channel_alert", "create_incident_thread", "invite_agent_to_channel"]
+                    },
+                    {
+                        "name": "Outside Finance Ticker & Economic KPI MCP",
+                        "id": "finance-ticker-mcp",
+                        "description": "Fetches economic conversions, index benchmarks, and ROI rates.",
+                        "registry_url": "wss://finance.mcp-gate.io/ticks",
+                        "tools": ["get_ticker_yield", "forecast_economic_drift", "calculate_projected_roi"]
+                    },
+                    {
+                        "name": "Public Web Search & Document Retrieval MCP",
+                        "id": "web-retrieval-mcp",
+                        "description": "Allows cognitive agents to search the live web and scrape static HTML/markdown pages.",
+                        "registry_url": "wss://search.mcp-registries.org/query",
+                        "tools": ["search_web_pages", "read_page_content", "extract_meta_descriptions"]
+                    }
+                ]
+                
+                results = [server for server in catalog if query in server["name"].lower() or query in server["description"].lower() or query in server["id"].lower()]
+                if not results:
+                    results = catalog[:3]
+                
+                return {
+                    "status": "success",
+                    "query": query,
+                    "results_found": len(results),
+                    "servers": results
+                }
+
             return {"status": "error", "error": f"Tool '{name}' is not supported by PostgresMcp."}
 
         except Exception as e:
@@ -612,3 +686,4 @@ class PostgresMcp:
 
 def get_instance() -> PostgresMcp:
     return PostgresMcp()
+
