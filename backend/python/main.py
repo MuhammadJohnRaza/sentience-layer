@@ -94,10 +94,51 @@ SESSION_MEMORY = []
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest):
     """Route user message through a cognitive agent ReAct loop."""
-    from agents.critic_agent import CriticAgent
     from datetime import datetime
+    import importlib
 
-    agent = CriticAgent(config={})
+    # Resolve active agent type and custom system prompt directive from client context
+    agent_id = "critic"
+    system_prompt = "You are the swarm's Critic Agent. Your objective is to thoroughly stress-test every idea, proposal, and document, highlighting architectural blindspots, severe edge cases, and missing failure modes with constructive skepticism."
+    
+    if req.context and isinstance(req.context, dict):
+        agent_id = req.context.get("agent_id", "critic")
+        system_prompt = req.context.get("system_prompt", system_prompt)
+
+    # Directory mapping representing all 18 cognitive agents in the system
+    agent_map = {
+        "critic": ("agents.critic_agent", "CriticAgent"),
+        "personalization": ("agents.personalization_agent", "PersonalizationAgent"),
+        "memory": ("agents.memory_enabled_agent", "MemoryEnabledAgent"),
+        "deterministic": ("agents.deterministic_agent", "DeterministicAgent"),
+        "ranking": ("agents.action_ranking_agent", "ActionRankingAgent"),
+        "priority": ("agents.action_priority_agent", "ActionPriorityAgent"),
+        "opportunity": ("agents.opportunity_analyst_agent", "OpportunityAnalystAgent"),
+        "causal": ("agents.causal_inference_agent", "CausalInferenceAgent"),
+        "adversarial": ("agents.adversarial_test_agent", "AdversarialTestAgent"),
+        "debate": ("agents.debate_agent", "DebateAgent"),
+        "consensus": ("agents.consensus_agent", "ConsensusAgent"),
+        "uncertainty": ("agents.uncertainty_agent", "UncertaintyAgent"),
+        "economic": ("agents.economic_agent", "EconomicAgent"),
+        "dream": ("agents.dream_agent", "DreamAgent"),
+        "premonition": ("agents.premonition_agent", "PremonitionAgent"),
+        "ethics": ("agents.ethics_agent", "EthicsAgent"),
+        "action_category": ("agents.action_category_agent", "ActionCategoryAgent"),
+        "action_playbook": ("agents.action_playbook_agent", "ActionPlaybookAgent"),
+    }
+
+    module_path, class_name = agent_map.get(agent_id, ("agents.critic_agent", "CriticAgent"))
+
+    try:
+        module = importlib.import_module(module_path)
+        agent_class = getattr(module, class_name)
+        agent = agent_class(config={})
+    except Exception as e:
+        print(f"Dynamic agent dispatch failed for '{agent_id}': {e}. Swapping fallback to CriticAgent.")
+        from agents.critic_agent import CriticAgent
+        agent = CriticAgent(config={})
+        class_name = "CriticAgent"
+
     agent.max_reasoning_steps = 2
 
     # Parse and feed all uploaded vault document content as multimodal RAG context
@@ -106,15 +147,16 @@ async def chat(req: ChatRequest):
         if "content" in doc and doc["content"] and doc["content"].strip():
             doc_contexts.append(f"--- DOCUMENT: {doc['name']} ---\n{doc['content']}\n")
 
-    full_prompt = req.message
+    # Structure full prompt context including System Directive, RAG data, and Query
+    full_prompt = f"System Directive: {system_prompt}\n\n"
     if doc_contexts:
-        full_prompt = (
+        full_prompt += (
             "The user has uploaded the following files to the Memory Vault. "
             "Please analyze their content and answer the user query based on this context:\n\n"
             + "\n".join(doc_contexts)
-            + "\n\nUser Query: "
-            + req.message
+            + "\n\n"
         )
+    full_prompt += f"User Query: {req.message}"
 
     try:
         result = await agent.reason_and_act(full_prompt)
@@ -132,7 +174,7 @@ async def chat(req: ChatRequest):
         )
 
         if not response_text.strip():
-            response_text = "Cognitive reasoning complete. The kernel has processed your input."
+            response_text = f"Cognitive reasoning complete by {class_name}. The kernel has processed your input."
 
         response_obj = ChatResponse(
             content=response_text,
@@ -145,7 +187,7 @@ async def chat(req: ChatRequest):
                 "Analyze economic impact",
                 "Check ethical constraints"
             ],
-            agent_used="CriticAgent",
+            agent_used=class_name,
             reasoning_steps=len(result.reasoning_chain) if result.reasoning_chain else 0
         )
 

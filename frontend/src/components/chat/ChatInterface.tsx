@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/store/useStore";
 import { api } from "@/lib/api";
+import { AGENT_TYPES } from "@/lib/constants";
 
 export function ChatInterface() {
   const { messages, isLoading, sendMessage, clearChat } = useChat();
@@ -28,6 +29,30 @@ export function ChatInterface() {
   const [postgresActive, setPostgresActive] = useState(false);
   const [causalActive, setCausalActive] = useState(false);
   const [swarmActive, setSwarmActive] = useState(true);
+
+  // Agent Swarm Selector and Custom System Prompt States
+  const [selectedAgent, setSelectedAgent] = useState("critic");
+  const [isPromptDrawerOpen, setIsPromptDrawerOpen] = useState(false);
+  const [customSystemPrompts, setCustomSystemPrompts] = useState<Record<string, string>>({
+    critic: "You are the swarm's Critic Agent. Your objective is to thoroughly stress-test every idea, proposal, and document, highlighting architectural blindspots, severe edge cases, and missing failure modes with constructive skepticism.",
+    personalization: "You are the Personalization Agent. Your goal is to adapt all swarm outputs to the user's explicit profile, preferred vocabulary, expertise level, and historical interaction telemetry.",
+    memory: "You are the Memory Agent. You maintain semantic indexing across the cognitive vault, retrieving past contexts and linking active inquiries back to consolidated knowledge nodes.",
+    deterministic: "You are the Deterministic Agent. Your focus is absolute mathematical rigor, structured execution rules, and validating that swarm actions conform to exact systemic boundaries.",
+    ranking: "You are the Action Ranking Agent. You evaluate list outcomes and rank them based on expected utility, resource cost, feasibility, and cognitive impact score.",
+    priority: "You are the Priority Agent. Your goal is to separate the signal from the noise, identifying critical-path actions that require immediate tactical execution.",
+    opportunity: "You are the Swarm Opportunity Analyst. You scan documents and logs to discover hidden cost efficiencies, potential strategic growth points, and high-ROI opportunities.",
+    causal: "You are the Causal Inference Agent. You trace chain-reaction linkages between active variables, modeling the upstream causes and downstream effects of every intervention.",
+    adversarial: "You are the Red Team Swarm Agent. You play devil's advocate, identifying potential security risks, data leakage points, and hostile exploits in any proposed logic.",
+    debate: "You are the Debate Agent. You present alternative viewpoints, orchestrating counter-arguments to ensure the swarm explores the full matrix of possibilities.",
+    consensus: "You are the Consensus Agent. You aggregate recommendations from all 18 swarm workers to find the optimal common ground and compile the final action roadmap.",
+    uncertainty: "You are the Uncertainty Agent. You calculate confidence scores and identify assumptions, ensuring the user understands the exact variance and margin of error.",
+    economic: "You are the Economic Swarm Agent. You evaluate financial metrics, calculating ROI percentages, cost-benefit ratios, and projected hedge efficiencies over time.",
+    dream: "You are the Dream Agent. You consolidate random, unorganized daily chat traces and raw memories into clean, high-level structural concepts.",
+    premonition: "You are the Premonition Agent. You analyze long-term historical trends to forecast potential future bottlenecks, disruptions, and strategic pivot points.",
+    ethics: "You are the Swarm Ethics Auditor. You cross-reference actions with safety alignment, bias reduction, and human-in-the-loop guidelines to ensure complete compliance.",
+    action_category: "You are the Action Classifier. You sort incoming tasks and raw ideas into highly organized functional domains for maximum dispatch efficiency.",
+    action_playbook: "You are the Playbook Compiler. You organize individual action items into a clean, day-by-day sequential operations plan over a 30-day timeline.",
+  });
 
   const addNotification = useStore((state) => state.addNotification);
 
@@ -74,6 +99,8 @@ export function ChatInterface() {
       // Dispatch real multimodal reasoning prompt
       await sendMessage(finalPrompt, {
         datasources: activeDatasources,
+        agent_id: selectedAgent,
+        system_prompt: customSystemPrompts[selectedAgent],
       });
 
       if (inputRef.current) inputRef.current.value = "";
@@ -163,6 +190,88 @@ export function ChatInterface() {
         >
           👾 Swarm Loggers
         </Badge>
+      </div>
+
+      {/* Agent swarm custom prompt controller */}
+      <div className="border-b border-border/15 bg-background/40 p-4 space-y-3.5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-black text-primary-foreground/90 tracking-widest uppercase">Target Swarm Worker:</span>
+            <select
+              value={selectedAgent}
+              onChange={(e) => setSelectedAgent(e.target.value)}
+              className="bg-card border border-border/30 rounded-lg px-3 py-1.5 text-xs font-black text-amber-300 tracking-wider focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-300 cursor-pointer"
+            >
+              {AGENT_TYPES.map((agent) => (
+                <option key={agent.id} value={agent.id}>
+                  🤖 {agent.name} Agent
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsPromptDrawerOpen(!isPromptDrawerOpen)}
+            className="text-[10px] font-black tracking-widest border border-border/20 hover:bg-primary/10 transition-all duration-300"
+          >
+            {isPromptDrawerOpen ? "🔒 CLOSE SYSTEM PROMPT" : "⚙️ CONFIGURE SYSTEM PROMPT"}
+          </Button>
+        </div>
+
+        {isPromptDrawerOpen && (
+          <div className="space-y-2 p-3 bg-card/45 border border-border/20 rounded-xl transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-black tracking-widest text-muted-foreground uppercase">System Directive (Pre-loaded Prompt):</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const defaultPrompts: Record<string, string> = {
+                    critic: "You are the swarm's Critic Agent. Your objective is to thoroughly stress-test every idea, proposal, and document, highlighting architectural blindspots, severe edge cases, and missing failure modes with constructive skepticism.",
+                    personalization: "You are the Personalization Agent. Your goal is to adapt all swarm outputs to the user's explicit profile, preferred vocabulary, expertise level, and historical interaction telemetry.",
+                    memory: "You are the Memory Agent. You maintain semantic indexing across the cognitive vault, retrieving past contexts and linking active inquiries back to consolidated knowledge nodes.",
+                    deterministic: "You are the Deterministic Agent. Your focus is absolute mathematical rigor, structured execution rules, and validating that swarm actions conform to exact systemic boundaries.",
+                    ranking: "You are the Action Ranking Agent. You evaluate list outcomes and rank them based on expected utility, resource cost, feasibility, and cognitive impact score.",
+                    priority: "You are the Priority Agent. Your goal is to separate the signal from the noise, identifying critical-path actions that require immediate tactical execution.",
+                    opportunity: "You are the Swarm Opportunity Analyst. You scan documents and logs to discover hidden cost efficiencies, potential strategic growth points, and high-ROI opportunities.",
+                    causal: "You are the Causal Inference Agent. You trace chain-reaction linkages between active variables, modeling the upstream causes and downstream effects of every intervention.",
+                    adversarial: "You are the Red Team Swarm Agent. You play devil's advocate, identifying potential security risks, data leakage points, and hostile exploits in any proposed logic.",
+                    debate: "You are the Debate Agent. You present alternative viewpoints, orchestrating counter-arguments to ensure the swarm explores the full matrix of possibilities.",
+                    consensus: "You are the Consensus Agent. You aggregate recommendations from all 18 swarm workers to find the optimal common ground and compile the final action roadmap.",
+                    uncertainty: "You are the Uncertainty Agent. You calculate confidence scores and identify assumptions, ensuring the user understands the exact variance and margin of error.",
+                    economic: "You are the Economic Swarm Agent. You evaluate financial metrics, calculating ROI percentages, cost-benefit ratios, and projected hedge efficiencies over time.",
+                    dream: "You are the Dream Agent. You consolidate random, unorganized daily chat traces and raw memories into clean, high-level structural concepts.",
+                    premonition: "You are the Premonition Agent. You analyze long-term historical trends to forecast potential future bottlenecks, disruptions, and strategic pivot points.",
+                    ethics: "You are the Swarm Ethics Auditor. You cross-reference actions with safety alignment, bias reduction, and human-in-the-loop guidelines to ensure complete compliance.",
+                    action_category: "You are the Action Classifier. You sort incoming tasks and raw ideas into highly organized functional domains for maximum dispatch efficiency.",
+                    action_playbook: "You are the Playbook Compiler. You organize individual action items into a clean, day-by-day sequential operations plan over a 30-day timeline.",
+                  };
+                  setCustomSystemPrompts(prev => ({
+                    ...prev,
+                    [selectedAgent]: defaultPrompts[selectedAgent]
+                  }));
+                  addNotification(`Reset ${selectedAgent} prompt to default parameters.`);
+                }}
+                className="h-6 text-[8px] font-black text-muted-foreground/80 hover:text-primary-foreground hover:bg-border/10"
+              >
+                🔄 RESET DEFAULT
+              </Button>
+            </div>
+            <textarea
+              value={customSystemPrompts[selectedAgent] || ""}
+              onChange={(e) => setCustomSystemPrompts({
+                ...customSystemPrompts,
+                [selectedAgent]: e.target.value
+              })}
+              rows={3}
+              className="w-full bg-background/50 border border-border/30 rounded-lg p-2.5 text-xs font-semibold text-primary-foreground/95 placeholder:text-muted-foreground/45 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-300 resize-none font-mono"
+            />
+          </div>
+        )}
       </div>
 
       {/* Messages Viewport */}

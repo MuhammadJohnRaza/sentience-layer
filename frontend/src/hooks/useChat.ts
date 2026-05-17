@@ -11,7 +11,7 @@ export function useChat() {
   const setIsLoading = useStore((state) => state.setChatLoading);
   const abortRef = useRef<AbortController | null>(null);
   const sendMessage = useCallback(
-    async (content: string) => {
+    async (content: string, customContext?: any) => {
       const userMsg: Message = {
         id: generateId(),
         role: "user",
@@ -24,6 +24,7 @@ export function useChat() {
         abortRef.current = new AbortController();
         const response = await api.sendMessage(content, {
           history: messages.slice(-10),
+          ...customContext,
         });
         const assistantMsg: Message = {
           id: generateId(),
