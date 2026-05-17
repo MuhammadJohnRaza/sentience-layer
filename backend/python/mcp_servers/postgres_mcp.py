@@ -16,6 +16,7 @@ class PostgresMcp:
         self.is_initialized = False
         self.db_path = ":memory:"
         self.conn = None
+        self.nosql_collections = {}
 
     def initialize(self) -> bool:
         """Initialize the simulated PostgreSQL/SQLite schema and seed telemetry datasets"""
@@ -217,19 +218,72 @@ class PostgresMcp:
             cursor.execute("INSERT OR REPLACE INTO dream_consolidation_runs VALUES ('run_08', 11, 93.5, 29.8, 18.4, 5.2, '2026-05-15 18:00:00')")
             
             self.conn.commit()
+            
+            # Seed NoSQL JSON collections for Unified Multimodal & Document Stores
+            self.nosql_collections = {
+                "agent_conversations": [
+                    {
+                        "doc_id": "conv_01",
+                        "session_title": "Mitigation of 30% Checkout Latency Spike",
+                        "timeline": [
+                            {"step": 1, "agent": "CriticAgent", "state": "anomaly_detected", "finding": "Checkout submit latencies surged to 425ms correlated with unindexed scans."},
+                            {"step": 2, "agent": "ConsensusAgent", "state": "mitigation_consensused", "decision": "Optimize index schema threshold and trigger target economic CRM recover discount incentives."}
+                        ],
+                        "active_agents": ["CriticAgent", "ConsensusAgent", "CausalInferenceAgent"],
+                        "created_at": "2026-05-17T22:15:00Z"
+                    },
+                    {
+                        "doc_id": "conv_02",
+                        "session_title": "Economic Model Forecaster Auditing",
+                        "timeline": [
+                            {"step": 1, "agent": "EconomicForecastingAgent", "state": "modeling", "projected_boost": "+12.5% recovery"},
+                            {"step": 2, "agent": "OpportunityAnalystAgent", "state": "audited", "status": "approved"}
+                        ],
+                        "active_agents": ["EconomicForecastingAgent", "OpportunityAnalystAgent"],
+                        "created_at": "2026-05-17T22:10:00Z"
+                    }
+                ],
+                "vector_embeddings": [
+                    {
+                        "embedding_id": "vec_chunk_01",
+                        "dimensions": 1536,
+                        "values": [0.015, -0.042, 0.118, 0.089, -0.056],
+                        "metadata": {"source_doc": "init_vault_doc", "cluster": "diagnostics", "weight": 0.98}
+                    },
+                    {
+                        "embedding_id": "vec_chunk_02",
+                        "dimensions": 1536,
+                        "values": [-0.084, 0.125, 0.042, -0.012, 0.099],
+                        "metadata": {"source_doc": "checkout_caching_playbook", "cluster": "optimizations", "weight": 0.95}
+                    }
+                ],
+                "quarantine_configs": [
+                    {
+                        "config_id": "quar_boundary_01",
+                        "sandbox_name": "Doubt Room Container",
+                        "rules": {
+                            "lock_thread_pool": True,
+                            "allow_external_requests": False,
+                            "isolation_level": "strict_quarantine"
+                        },
+                        "monitored_incidents": ["incident_01", "incident_04"]
+                    }
+                ]
+            }
+            
             self.is_initialized = True
-            logger.info("Local PostgreSQL MCP database successfully initialized and seeded with rich, healthy real-world scenario datasets.")
+            logger.info("Local PostgreSQL MCP database successfully initialized and seeded with rich, healthy real-world SQL and NoSQL scenario datasets.")
             return True
         except Exception as e:
             logger.error(f"Failed to initialize local PostgreSQL MCP: {e}")
             return False
 
     def list_tools(self) -> List[Dict[str, Any]]:
-        """Expose PostgreSQL MCP Tools to the global registry"""
+        """Expose PostgreSQL, NoSQL, and Multimodal MCP Tools to the global registry"""
         return [
             {
                 "name": "postgres_list_tables",
-                "description": "Lists all available tables in the PostgreSQL database.",
+                "description": "Lists all available SQL relational tables in the PostgreSQL database.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {}
@@ -237,7 +291,7 @@ class PostgresMcp:
             },
             {
                 "name": "postgres_describe_table",
-                "description": "Gets columns and schema information for a specific table.",
+                "description": "Gets columns and schema information for a specific SQL relational table.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
@@ -262,17 +316,66 @@ class PostgresMcp:
                     },
                     "required": ["query"]
                 }
+            },
+            {
+                "name": "nosql_list_collections",
+                "description": "Lists all MongoDB-style JSON document collections available in the NoSQL database.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {}
+                }
+            },
+            {
+                "name": "nosql_query_collection",
+                "description": "Queries a MongoDB-style JSON collection by matching key-value filters.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "collection_name": {
+                            "type": "string",
+                            "description": "Name of the NoSQL collection to query (e.g. agent_conversations, vector_embeddings, quarantine_configs)."
+                        },
+                        "filter_key": {
+                            "type": "string",
+                            "description": "Key attribute inside JSON documents to filter by."
+                        },
+                        "filter_value": {
+                            "type": "string",
+                            "description": "Value to match."
+                        }
+                    },
+                    "required": ["collection_name"]
+                }
+            },
+            {
+                "name": "multimodal_process_input",
+                "description": "Processes multimodal contextual feeds (voice transcripts, visual diagrams, or vector grids) for unified relational inference.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "modality": {
+                            "type": "string",
+                            "description": "The modality type: 'voice' (audio transcripts), 'visual' (timeline schema layouts), or 'vector' (multidimensional vector grids)."
+                        },
+                        "feed_content": {
+                            "type": "string",
+                            "description": "Text representation or serialised payload of the input."
+                        }
+                    },
+                    "required": ["modality", "feed_content"]
+                }
             }
         ]
 
     def call_tool(self, name: str, arguments: Dict[str, Any]) -> Any:
-        """Execute the requested database tools against the SQLite relational engine"""
+        """Execute SQL relational, NoSQL document, or Multimodal processing tools securely"""
         if not self.is_initialized:
             self.initialize()
 
         cursor = self.conn.conn.cursor() if hasattr(self.conn, "conn") else self.conn.cursor()
 
         try:
+            # SQL Tools
             if name == "postgres_list_tables":
                 cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
                 tables = [row[0] for row in cursor.fetchall()]
@@ -301,6 +404,57 @@ class PostgresMcp:
                 rows = cursor.fetchall()
                 records = [dict(zip(columns, row)) for row in rows]
                 return {"status": "success", "records": records}
+
+            # NoSQL Tools
+            elif name == "nosql_list_collections":
+                return {"status": "success", "collections": list(self.nosql_collections.keys())}
+
+            elif name == "nosql_query_collection":
+                coll_name = arguments.get("collection_name")
+                filt_key = arguments.get("filter_key")
+                filt_val = arguments.get("filter_value")
+                
+                if coll_name not in self.nosql_collections:
+                    return {"status": "error", "error": f"Collection '{coll_name}' not found."}
+                
+                docs = self.nosql_collections[coll_name]
+                if filt_key:
+                    matched = [d for d in docs if str(d.get(filt_key)) == str(filt_val)]
+                    return {"status": "success", "records": matched}
+                return {"status": "success", "records": docs}
+
+            # Multimodal Tools
+            elif name == "multimodal_process_input":
+                modality = arguments.get("modality", "")
+                feed = arguments.get("feed_content", "")
+                
+                # Mock high-fidelity neural multimodal transformer analysis
+                logger.info(f"Processing multimodal payload of type {modality}: {feed}")
+                
+                if modality == "voice":
+                    return {
+                        "status": "success",
+                        "inferred_intent": "EXECUTE_CHECKOUT_DATABASE_CACHING_OPTIMIZATION",
+                        "confidence": 0.97,
+                        "transcript_clean": feed,
+                        "causal_link": "Direct causal link verified between user spoken trigger and Playbook dispatches."
+                    }
+                elif modality == "visual":
+                    return {
+                        "status": "success",
+                        "recognized_nodes": ["Doubt Room Sandbox", "Postgres Pool Gate", "Trace Timeline"],
+                        "confidence": 0.94,
+                        "implication": "Containment drift quarantined correctly; 3D memory node edges fully integrated."
+                    }
+                elif modality == "vector":
+                    return {
+                        "status": "success",
+                        "nearest_neighbors": ["vec_chunk_01", "vec_chunk_02"],
+                        "alignment_score": 0.965,
+                        "vector_status": "aligned_and_consolidated"
+                    }
+                
+                return {"status": "error", "error": f"Modality type '{modality}' is not supported."}
 
             return {"status": "error", "error": f"Tool '{name}' is not supported by PostgresMcp."}
 
