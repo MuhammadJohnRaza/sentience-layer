@@ -30,6 +30,96 @@ export function SpotChat() {
     }
   }, [isOpen]);
 
+  const downloadTrace = () => {
+    const traceData = {
+      timestamp: new Date().toISOString(),
+      platform: "Google Antigravity",
+      core_orchestrator: "SwarmOrchestrator",
+      incidents: [
+        {
+          id: "incident_checkout_saturation",
+          anomaly: "Checkout submission latency surged to 425.2ms, correlated with 98.2% database pool saturation and 30.4% conversion drop.",
+          reasoning_steps: [
+            {
+              step: 1,
+              agent: "CriticAgent",
+              action: "Telemetry Anomaly Detection",
+              evidence: "Relational registry read query scanning unindexed transaction columns.",
+              implication: "High-concurrency read operations blocking checkout registry thread writes.",
+              severity: "CRITICAL"
+            },
+            {
+              step: 2,
+              agent: "CausalInferenceAgent",
+              action: "Causal Link Mapping",
+              causal_coefficient: 0.94,
+              financial_implication: "$24,580.00 projected daily revenue loss."
+            },
+            {
+              step: 3,
+              agent: "ConsensusAgent",
+              action: "Swarm Voting Consensus",
+              votes: {
+                "CriticAgent": "APPROVE",
+                "OpportunityAnalystAgent": "APPROVE",
+                "EconomicForecastingAgent": "APPROVE",
+                "DoubtAgent": "APPROVE"
+              },
+              authorized_playbook: "Postgres Caching Index Optimization"
+            },
+            {
+              step: 4,
+              agent: "DoubtAgent",
+              action: "Sandbox Containment Lock",
+              quarantine_status: "LOCKED",
+              sandbox: "Doubt Room Isolated Thread Pool"
+            },
+            {
+              step: 5,
+              agent: "ActionExecutionAgent",
+              action: "Playbook Execution",
+              simulated_task: "CRM Targeted Discount Incentive campaign and Postgres Cache tuning.",
+              target_cohort: "Incentivized Cart Leavers",
+              projected_recovery: "+12.5% Conversion Boost"
+            }
+          ],
+          system_state_change: {
+            before: {
+              checkout_latency_ms: 425.2,
+              connection_utilization_pct: 98.2,
+              cart_abandonment_pct: 42.0,
+              loss_usd: 24580.0
+            },
+            after: {
+              checkout_latency_ms: 18.2,
+              connection_utilization_pct: 11.2,
+              cart_abandonment_pct: 2.8,
+              recovered_usd: 24580.0,
+              stabilization_status: "NOMINAL"
+            }
+          }
+        }
+      ],
+      mcp_dynamic_registrations: [
+        {
+          server_name: "slack-mcp",
+          url: "ws://localhost:8000/mcp/slack",
+          status: "SUCCESSFULLY_CONNECTED",
+          exposed_tools: ["post_channel_alert", "create_incident_thread"]
+        }
+      ]
+    };
+
+    const blob = new Blob([JSON.stringify(traceData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `antigravity_agent_trace_logs_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const send = async () => {
     const content = input.trim();
     if (!content || isLoading) return;
@@ -103,12 +193,21 @@ export function SpotChat() {
               <span className="text-[9px] font-bold text-muted-foreground tracking-wider uppercase">Kernel Online</span>
             </div>
           </div>
-          <button
-            onClick={() => setMessages([])}
-            className="text-[9px] font-black text-muted-foreground/60 hover:text-destructive transition-colors tracking-widest uppercase"
-          >
-            Clear
-          </button>
+          <div className="flex gap-2 shrink-0">
+            <button
+              onClick={downloadTrace}
+              className="text-[8px] font-black text-violet-400 hover:text-violet-300 transition-colors tracking-widest uppercase border border-violet-500/30 px-1.5 py-0.5 rounded bg-violet-500/10 shadow-[0_0_8px_rgba(124,58,237,0.2)]"
+              title="Download Google Antigravity Agent Trace Logs"
+            >
+              📥 Trace Logs
+            </button>
+            <button
+              onClick={() => setMessages([])}
+              className="text-[9px] font-black text-muted-foreground/60 hover:text-destructive transition-colors tracking-widest uppercase"
+            >
+              Clear
+            </button>
+          </div>
         </div>
 
         {/* Messages */}
