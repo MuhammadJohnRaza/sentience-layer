@@ -56,6 +56,10 @@ ${message.content}
     }
   };
 
+  const attachmentMatch = message.content.match(/^\[Multimodal Attachment:\s*(.*?)\]\s*([\s\S]*)$/);
+  const displayContent = attachmentMatch ? attachmentMatch[2] : message.content;
+  const attachmentFilename = attachmentMatch ? attachmentMatch[1] : null;
+
   return (
     <div className={cn("flex gap-3 items-start my-4 w-full", isUser ? "flex-row-reverse" : "flex-row")}>
       {/* Avatar column */}
@@ -98,9 +102,19 @@ ${message.content}
           )}
         </div>
 
+        {/* Multimodal Attachment Capsule */}
+        {attachmentFilename && (
+          <div className="mb-2.5 flex items-center gap-2 bg-[#020207]/60 border border-border/30 rounded-lg p-2 text-xs font-bold text-amber-300 shadow-inner">
+            <span>📎 Attached Document:</span>
+            <Badge className="bg-primary/20 border border-border/40 text-primary-foreground font-mono text-[9px] px-1.5 py-0">
+              {attachmentFilename}
+            </Badge>
+          </div>
+        )}
+
         {/* Content text */}
         <p className="text-sm leading-relaxed font-medium tracking-wide whitespace-pre-wrap selection:bg-primary/50 selection:text-primary-foreground">
-          {message.content}
+          {displayContent}
         </p>
 
         {/* Action Buttons */}
