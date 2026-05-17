@@ -100,6 +100,10 @@ export const api = {
       method: "POST",
       body: formData,
     }),
+  deleteVaultDocument: (docId: string) =>
+    fetchApi(`/api/vault/documents/${docId}`, {
+      method: "DELETE",
+    }),
 
   // Playbook
   generatePlaybook: () =>

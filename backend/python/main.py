@@ -389,6 +389,7 @@ def vault_documents():
             "size": f"{len(s['user']) + len(s['assistant'])} bytes",
             "uploaded_at": s["timestamp"],
             "status": "encrypted",
+            "content": f"USER INQUIRY:\n{s['user']}\n\nCOGNITIVE KERNEL TRANSCRIPT:\n{s['assistant']}",
             "metadata": {
                 "user_prompt": s["user"],
                 "agent_response": s["assistant"],
@@ -410,6 +411,7 @@ def vault_documents():
             "size": "4.2 KB",
             "uploaded_at": "May 17, 06:00 PM",
             "status": "encrypted",
+            "content": "SYSTEM DIAGNOSTICS LOG\n======================\nStatus: Swarm Operational\nAgents Loaded: 18/18 active\nReasoning Engine: ReAct Loop Active\nMCP Providers: Postgres MCP Local Server Registered\nSecurity: Advanced Cognitive Encryption active.",
             "metadata": {
                 "description": "Initial system trace showing cognitive agent readiness and MCP tool registration.",
                 "reasoning": "Standard operating guidelines require automatic system diagnostic trace verification at startup."
@@ -469,6 +471,23 @@ async def vault_upload(file: UploadFile = File(...)):
         "status": "success",
         "document": doc
     }
+
+@app.delete("/api/vault/documents/{doc_id}")
+def delete_vault_document(doc_id: str):
+    global UPLOADED_DOCUMENTS, SESSION_MEMORY
+    
+    # Try deleting from UPLOADED_DOCUMENTS
+    initial_uploaded_len = len(UPLOADED_DOCUMENTS)
+    UPLOADED_DOCUMENTS = [d for d in UPLOADED_DOCUMENTS if d["id"] != doc_id]
+    
+    # Try deleting from SESSION_MEMORY
+    initial_session_len = len(SESSION_MEMORY)
+    SESSION_MEMORY = [s for s in SESSION_MEMORY if s["id"] != doc_id]
+    
+    if len(UPLOADED_DOCUMENTS) < initial_uploaded_len or len(SESSION_MEMORY) < initial_session_len:
+        return {"status": "success", "message": f"Document {doc_id} successfully deleted from local cognitive store."}
+        
+    return {"status": "success", "message": "Document removed from cache."}
 
 @app.get("/api/insights")
 def insights():
