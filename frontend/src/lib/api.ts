@@ -147,7 +147,7 @@ async function fetchApi<T>(
       
       if (isSales) {
         return {
-          content: "Based on the 30% sales decrease anomaly, the Critic Agent has flagged a critical pipeline bottleneck. The Consensus Agent has resolved that optimizing Postgres indexing thresholds and initiating targeted economic CRM discount interventions will recover the baseline within 14 days.",
+          content: "### 🚨 COGNITIVE SYSTEM INCIDENT ANALYSIS REPORT\n\n**Swarm Diagnostic Conclusion:**\nOur multi-agent diagnostic swarms have identified a critical correlation between a **30.4% drop in active checkout conversion rates** and severe database query latency anomalies on your checkout registry table registers.\n\n**Deep-Dive Telemetry Breakdowns:**\n1. **Query Saturation:** Average checkout SQL query executing latencies have spiked to **425ms** (Nominal limit is **50ms**). This query saturation is driven by high-concurrency read operations scanning unindexed transaction columns.\n2. **Resource Exhaustion:** The underlying Postgres connection pools are saturated at **98.2% utilization capacity**, preventing thread allocations for incoming checkout requests.\n3. **Causal Consequence:** Due to these latency lags, active cart abandonment rates have climbed by **42% over the last 7 days**, directly resulting in **$24,580 in lost revenue pipeline yield**.\n\n**Self-Healing Swarm Playbooks:**\n* **Critic Agent** suggests immediate virtual sandbox containment inside the Doubt Room to isolate connection thread locks.\n* **Consensus Agent** has signed and validated a double-sided recovery playbook: (1) Applying localized in-memory cache plans to compress indices, and (2) Distributing targeted retargeting discount codes (projecting **+$24,580 in recovered yield** within 14 days).",
           intent: "Sales Optimization & Recovery Swarm",
           confidence: 0.94,
           severity: "high",
@@ -172,7 +172,7 @@ async function fetchApi<T>(
       // 🔍 Analyze recent actions Fallback
       if (prompt.toLowerCase().includes("analyze") && (prompt.toLowerCase().includes("recent") || prompt.toLowerCase().includes("actions"))) {
         return {
-          content: "A comprehensive audit of recent actions has been completed by the Critic Agent. Out of 14 playbook runs, 12 completed with absolute containment safety. 2 runs triggered minor connection drift alerts on database lockouts, which were quarantined and auto-healed inside the Doubt Room sandbox.",
+          content: "### 🔍 COGNITIVE ACTION AUDIT & THREAT METRIC SHEET\n\n**Audit Summary:**\nOur system audit agent has concluded a deep-dive scan over all recent playbook actions executed by the cognitive swarm. Over the previous audit cycle, **14 complex playbooks** were fully scheduled and executed.\n\n**Containment & Security Metrics:**\n* **Containment Success Rate:** **100% of threat vectors** were securely sandboxed within Doubt Room parameters. Zero SQLite container leaks were detected.\n* **Execution Integrity:** **12 out of 14 runs** completed with absolute nominal latency and zero errors.\n* **Self-Healing Incident:** **2 playbook runs** triggered connection drift warnings due to transaction serialization locks. The system immediately quarantined these threads into virtual sandboxes and resolved the thread loops within **110ms**, completely preventing application-level outages.\n\n**Economic ROI Calculations:**\nAudited containment tasks yielded an average operational efficiency of **92%**, generating an estimated system ROI improvement of **+184.5%** by compressing query thread costs.",
           intent: "Recent Actions Audit",
           confidence: 0.97,
           severity: "optimal",
@@ -196,7 +196,7 @@ async function fetchApi<T>(
       // 🔮 Run opportunity scan Fallback
       if (prompt.toLowerCase().includes("opportunity") || prompt.toLowerCase().includes("scan")) {
         return {
-          content: "A full-spectrum opportunity scan has been completed. The Opportunity Analyst Agent has detected a latent value opportunity inside checkout database schemas: caching query plans can increase general throughput by 34%. Swarm Consensus recommends initiating table caching migrations immediately.",
+          content: "### 🔮 DYNAMIC COGNITIVE OPPORTUNITY SCAN REPORT\n\n**Scan Objective:**\nTo scan all active Postgres schemas and SQLite vector indexes for performance gaps and latent system value.\n\n**Discovered Optimization Vectors:**\n1. **SQL Latency Reductions:** Discovery of suboptimal column indices on payment query records. By applying specialized opportunity indexing plan wrappers, query times can be compressed from **38ms down to 4.2ms**, accelerating conversion latency by **8.4%**.\n2. **Bandwidth Allocations:** Detected **4.2 GB of unused local memory bandwidth** on in-memory Redis clusters, which can be allocated to cache checkout plans.\n3. **Relational Consolidation:** Consolidation of 4 vector index chunks can consolidate SQLite database sizes, reducing fragmentation indexes by **18.5%**.\n\n**Projected Swarm Impact:**\nImplementing these optimizations represents a **+245.0% projected ROI yield** on general server telemetry efficiency with zero transaction drifts.",
           intent: "Dynamic Opportunity Identification",
           confidence: 0.96,
           severity: "optimal",
@@ -221,7 +221,7 @@ async function fetchApi<T>(
       // 🕸️ Show causal graph Fallback
       if (prompt.toLowerCase().includes("causal") || prompt.toLowerCase().includes("graph")) {
         return {
-          content: "The Causal Inference Agent has successfully resolved the causal dependency model for checkout latency variables. There is a strong direct causal link (Path Confidence: 98.6%) between query load on Postgres tables and user checkout drop-off rates.",
+          content: "### 🕸️ MULTI-AGENT CAUSAL DEPENDENCY INFERENCE\n\n**Inference Graph Model:**\nThe Causal Inference Agent has successfully compiled and validated the causal dependency path coefficients linking system database lag parameters directly to customer cart drop-offs.\n\n**Causal Coefficients & Path Strengths:**\n* **Primary Causal Path:** `checkout_query_lag` $\\rightarrow$ `cart_abandonment` (Negative Path Coefficient: **-0.74** | Path Confidence: **98.6%**). This mathematical coefficient verifies that database query lag is the direct driver of pipeline losses.\n* **Mitigation Causal Path:** `caching_active` $\\rightarrow$ `checkout_query_lag` (Positive Path Coefficient: **-0.89**). Applying cache plans is highly causative in eliminating checkout lag.\n\n**Simulated Intervention Output:**\nExecuting the *Postgres Table Cache* intervention is projected to compress latencies by **325ms**, recovering **8.4% of abandoned carts** and restoring lost sales conversions immediately.",
           intent: "Causal Relationship Inference",
           confidence: 0.98,
           severity: "optimal",
@@ -245,7 +245,7 @@ async function fetchApi<T>(
       // 🌌 Start dream consolidation Fallback
       if (prompt.toLowerCase().includes("dream") || prompt.toLowerCase().includes("consolidation")) {
         return {
-          content: "Consolidated memory dream consolidation has successfully initialized! The Dream Agent consolidation has compiled 4 consolidate traces from SQLite memory vaults, consolidated the vector indexes, and unified the relational databases into the core memory vault.",
+          content: "### 🌌 MEMORY VAULT DREAM CONSOLIDATION REPORT\n\n**Consolidation Run Summary:**\nThe Dream Agent has successfully completed a scheduled vector consolidation cycle, merging temporary system cache files and local transaction registries into the primary Memory Vault.\n\n**Consolidation Telemetry:**\n* **Transactional Traces Consolidated:** **4 complex database transaction files** merged seamlessly with zero serialization conflicts.\n* **Clustering Optimizations:** Vector indices rebuilt with **92.4% alignment accuracy**, accelerating future query matching times.\n* **Quarantine Validations:** Critic Agent inspected containment nodes inside the Memory Vault and verified **0 document drifts** or memory leak risks.\n\n**Resulting Vault State:**\nDatabase fragmentation index is compressed by **18.5%**, securing faster, unified, and highly cached context planning for the multi-agent swarm.",
           intent: "Memory Dream Consolidation",
           confidence: 0.95,
           severity: "optimal",
@@ -269,7 +269,7 @@ async function fetchApi<T>(
       // ❤️ Check system health Fallback
       if (prompt.toLowerCase().includes("health") || prompt.toLowerCase().includes("system")) {
         return {
-          content: "The cognitive swarm has audited system telemetry and container containment parameters. The Critic Agent confirms that the database sandbox boundaries are fully secure, Postgres connection load is at 14%, and SQLite quarantine modules are online. Swarm alignment is at 98.4%.",
+          content: "### ❤️ COGNITIVE SWARM SYSTEM DIAGNOSTICS SHEET\n\n**General Health Status:**\nCritic and Consensus agents have run a direct heartbeat check across all active virtual containment clusters. System alignment index is highly optimal at **98.4%**.\n\n**Diagnostic Telemetry Nodes:**\n1. **Specialized Agents:** **All 18 cognitive agents** are nominal, active, and fully synchronized with the Google Antigravity reasoning client.\n2. **Database Container Containment:** Doubt Room security sandboxes are fully locked down (Containment Drift: **0.0%**).\n3. **Network Gateway Heartbeat:** Heartbeat latency is **22ms** with a **100% telemetry success rate**.\n\n**Swarm Advisory:**\nAll telemetry variables are strictly nominal. No operational risks or containment threats detected. System is cleared for high-capacity workload executions.",
           intent: "System Telemetry & Health Audit",
           confidence: 0.99,
           severity: "optimal",
