@@ -11,9 +11,10 @@ export function VaultBrowser() {
   useEffect(() => {
     api.getVaultDocuments().then((data) => setDocuments(data));
   }, []);
-  const filtered = documents.filter((d) =>
-    d.name?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = documents.filter((d) => {
+    const docName = d.name || d.title || "";
+    return docName.toLowerCase().includes(search.toLowerCase());
+  });
   return (
     <Card>
       {" "}
@@ -65,7 +66,7 @@ export function VaultBrowser() {
                 </div>{" "}
                 <div>
                   {" "}
-                  <p className="font-medium">{doc.name}</p>{" "}
+                  <p className="font-medium">{doc.name || doc.title}</p>{" "}
                   <p className="text-xs text-foreground0">
                     {doc.size}• {doc.type}
                   </p>{" "}

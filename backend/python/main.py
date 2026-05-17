@@ -355,29 +355,17 @@ def causal_intervene(req: InterventionRequest):
         "effect": f"Intervention on '{req.nodeId}' simulated successfully. Causal factors aligned."
     }
 
+UPLOADED_DOCUMENTS = []
+
 @app.get("/api/vault/documents")
 def vault_documents():
     docs = []
-    
-    # If no sessions are in memory, return a dynamic mock document explaining that session memory is stored in the vault
-    if not SESSION_MEMORY:
-        docs.append({
-            "id": "init_vault_doc",
-            "title": "Sentience Layer System Diagnostics",
-            "type": "system_report",
-            "size": "4.2 KB",
-            "uploaded_at": "May 17, 06:00 PM",
-            "status": "encrypted",
-            "metadata": {
-                "description": "Initial system trace showing cognitive agent readiness and MCP tool registration.",
-                "reasoning": "Standard operating guidelines require automatic system diagnostic trace verification at startup."
-            }
-        })
     
     # Render all active stored sessions inside the Memory Vault
     for s in SESSION_MEMORY:
         docs.append({
             "id": s["id"],
+            "name": f"Cognitive Trace: {s['user'][:25]}...",
             "title": f"Cognitive Trace: {s['user'][:25]}...",
             "type": "chat_session",
             "size": f"{len(s['user']) + len(s['assistant'])} bytes",
@@ -391,23 +379,51 @@ def vault_documents():
             }
         })
         
+    # Append all custom uploaded files/documents
+    docs.extend(UPLOADED_DOCUMENTS)
+    
+    # If no documents exist in vault, show a initial guide trace
+    if not docs:
+        docs.append({
+            "id": "init_vault_doc",
+            "name": "Sentience Layer System Diagnostics",
+            "title": "Sentience Layer System Diagnostics",
+            "type": "system_report",
+            "size": "4.2 KB",
+            "uploaded_at": "May 17, 06:00 PM",
+            "status": "encrypted",
+            "metadata": {
+                "description": "Initial system trace showing cognitive agent readiness and MCP tool registration.",
+                "reasoning": "Standard operating guidelines require automatic system diagnostic trace verification at startup."
+            }
+        })
+        
     return docs
 
 from fastapi import UploadFile, File
 
 @app.post("/api/vault/upload")
 async def vault_upload(file: UploadFile = File(...)):
-    doc_id = f"doc_{len(SESSION_MEMORY) + 1}"
+    content = await file.read()
+    size_str = f"{len(content)} bytes" if len(content) < 1024 else f"{len(content)/1024:.1f} KB"
+    
+    doc = {
+        "id": f"uploaded_{len(UPLOADED_DOCUMENTS) + 1}",
+        "name": file.filename,
+        "title": file.filename,
+        "type": "chat_session" if file.filename.startswith("cognitive_trace") else "uploaded_file",
+        "size": size_str,
+        "uploaded_at": datetime.utcnow().strftime("%b %d, %I:%M %p"),
+        "status": "encrypted",
+        "metadata": {
+            "description": "Trace document persisted directly from Cognitive Chat Link.",
+            "storage_mode": "Memory Vault Persistence"
+        }
+    }
+    UPLOADED_DOCUMENTS.append(doc)
     return {
         "status": "success",
-        "document": {
-            "id": doc_id,
-            "title": file.filename,
-            "type": "uploaded_file",
-            "size": "15.4 KB",
-            "uploaded_at": datetime.utcnow().strftime("%b %d, %I:%M %p"),
-            "status": "encrypted"
-        }
+        "document": doc
     }
 
 @app.get("/api/insights")

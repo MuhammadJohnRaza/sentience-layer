@@ -6,6 +6,7 @@ import { cn, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/store/useStore";
+import { api } from "@/lib/api";
 
 export function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === "user";
@@ -20,10 +21,28 @@ export function MessageBubble({ message }: { message: Message }) {
     if (isSaved || isSaving) return;
     setIsSaving(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800)); // Smooth loading transition
+      const fileContent = `Cognitive Agent Trace Document
+==============================
+Timestamp: ${new Date().toLocaleString()}
+Message ID: ${message.id}
+
+Cognitive Content:
+--------------------
+${message.content}
+`;
+      const blob = new Blob([fileContent], { type: "text/plain" });
+      const file = new File([blob], `cognitive_trace_${message.id.slice(0, 8)}.txt`, {
+        type: "text/plain",
+      });
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      await api.uploadDocument(formData);
       setIsSaved(true);
       addNotification("Trace saved to Memory Vault successfully! 🔒");
     } catch (e) {
+      console.error(e);
       addNotification("Failed to save to vault.");
     } finally {
       setIsSaving(false);
