@@ -2,7 +2,7 @@
 import { AgentTrace } from "@/types";
 import { cn } from "@/lib/utils";
 export function TraceTimeline({ trace }: { trace: AgentTrace }) {
-  const steps = trace.reasoning.map((r, i) => ({
+  const steps = (trace.reasoning || []).map((r, i) => ({
     step: i + 1,
     label: r.action,
     status:

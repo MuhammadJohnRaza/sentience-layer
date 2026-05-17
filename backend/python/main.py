@@ -183,7 +183,11 @@ def agent_traces():
             "action": "system_audit",
             "thought": "Verifying relational schema parameters and active MCP connections.",
             "status": "completed",
-            "timestamp": datetime.utcnow().strftime("%b %d, %I:%M %p")
+            "timestamp": datetime.utcnow().strftime("%b %d, %I:%M %p"),
+            "reasoning": [
+                {"step": 1, "action": "Validate Postgres MCP server connectivity", "confidence": 0.95},
+                {"step": 2, "action": "Verify schema indices and document vault status", "confidence": 0.92}
+            ]
         }
     ]
 
