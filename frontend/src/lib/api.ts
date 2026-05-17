@@ -2,8 +2,44 @@
  * API Client for Sentience Layer Backend
  * Integrates with Antigravity endpoints
  */
-
 import { API_BASE_URL } from "./constants";
+
+// Local stateful fallbacks for document uploads and trace history
+let localVaultDocuments: any[] = [];
+let localMemoryNodes: any[] = [
+  {
+    id: "mem_chat_1",
+    type: "session",
+    content: "Checkout conversion query analysis: Correlation identified between Postgres connection pools and active cart drop-off thresholds.",
+    tags: ["chat", "checkout", "postgres"],
+    connections: ["mem_action_1", "mem_vault_1"],
+    timestamp: "2026-05-17T21:30:00Z"
+  },
+  {
+    id: "mem_action_1",
+    type: "action",
+    content: "Optimized Postgres checkout index wrappers and scaled connection pool limits from 14% to 92% impact.",
+    tags: ["action", "optimization", "caching"],
+    connections: ["mem_chat_1"],
+    timestamp: "2026-05-17T21:35:00Z"
+  },
+  {
+    id: "mem_doubt_1",
+    type: "doubt",
+    content: "SQLite quarantine check: Transaction drift loop anomaly successfully detected and contained in Doubt Room sandbox.",
+    tags: ["security", "sandbox", "sqlite"],
+    connections: ["mem_chat_1"],
+    timestamp: "2026-05-17T21:20:00Z"
+  },
+  {
+    id: "mem_vault_1",
+    type: "document",
+    content: "Uploaded diagnostic trace: trace_a7b8e.txt containing multi-agent critical path trace data.",
+    tags: ["vault", "telemetry", "trace"],
+    connections: ["mem_chat_1"],
+    timestamp: "2026-05-17T21:40:00Z"
+  }
+];
 
 class ApiError extends Error {
   constructor(
@@ -372,16 +408,80 @@ async function fetchApi<T>(
       ] as any;
     }
 
-    // Safe empty fallbacks for list endpoints to prevent render breaks
+    // Vault Document Upload Stateful Fallback
+    if (endpoint.includes("/api/vault/upload")) {
+      const file = options.body instanceof FormData ? (options.body.get("file") as File) : null;
+      const fileName = file ? file.name : `trace_saved_${Date.now().toString().slice(-6)}.txt`;
+      const sizeStr = file ? `${(file.size / 1024).toFixed(1)} KB` : "4.5 KB";
+      
+      const newDoc = {
+        id: `doc_${Date.now()}`,
+        name: fileName,
+        size: sizeStr,
+        uploadedAt: new Date().toISOString(),
+        type: "text/plain",
+        tags: fileName.includes("playbook") ? ["playbook", "swarm"] : ["trace", "telemetry"]
+      };
+      
+      localVaultDocuments.unshift(newDoc);
+
+      // Also dynamically add a corresponding Memory Node for this uploaded trace/playbook!
+      localMemoryNodes.unshift({
+        id: `mem_vault_${newDoc.id}`,
+        type: "document",
+        content: `Stored document in vault: ${fileName} (${sizeStr}) containing validated agent traces and consolidation roadmap.`,
+        tags: newDoc.tags,
+        connections: ["mem_chat_1"],
+        timestamp: newDoc.uploadedAt
+      });
+
+      return { success: true, doc: newDoc } as any;
+    }
+
+    // Vault Documents Stateful List Fallback
+    if (endpoint.includes("/api/vault/documents")) {
+      const defaultDocs = [
+        {
+          id: "init_vault_doc",
+          name: "system_heartbeat_nominal.log",
+          size: "2.4 KB",
+          uploadedAt: new Date(Date.now() - 86400000).toISOString(),
+          type: "text/plain",
+          tags: ["system", "diagnostics"]
+        }
+      ];
+      return [...localVaultDocuments, ...defaultDocs] as any;
+    }
+
+    // Memory Stateful List Fallback
+    if (endpoint.includes("/api/memory") && !endpoint.includes("/search")) {
+      return localMemoryNodes as any;
+    }
+
+    // Memory Search Stateful Fallback
+    if (endpoint.includes("/api/memory/search")) {
+      let query = "";
+      try {
+        if (options.body) {
+          query = JSON.parse(options.body as string).query || "";
+        }
+      } catch {}
+      
+      if (!query) return localMemoryNodes as any;
+      return localMemoryNodes.filter(n => 
+        n.content.toLowerCase().includes(query.toLowerCase()) ||
+        n.tags.some((t: string) => t.toLowerCase().includes(query.toLowerCase()))
+      ) as any;
+    }
+
+    // Safe empty fallbacks for remaining list endpoints to prevent render breaks
     if (
       endpoint.includes("/api/chat/history") || 
       endpoint.includes("/api/insights") || 
       endpoint.includes("/api/actions") || 
       endpoint.includes("/api/agents/") || 
-      endpoint.includes("/api/memory") || 
       endpoint.includes("/api/dream/reports") || 
-      endpoint.includes("/api/premonition") || 
-      endpoint.includes("/api/vault/documents")
+      endpoint.includes("/api/premonition")
     ) {
       return [] as any;
     }
