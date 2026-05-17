@@ -35,48 +35,65 @@ export function AgentStatusPanel() {
         <CardTitle className="text-primary-foreground font-black tracking-wider">Agent Status Modules</CardTitle>{" "}
       </CardHeader>{" "}
       <CardContent className="space-y-4">
-        {" "}
-        {AGENT_TYPES.slice(0, 6).map((agent) => {
-          const trace = traces.find((t) => t.agentType === agent.id);
-          const status = trace?.status || "idle";
-          return (
-            <div key={agent.id} className="flex items-center gap-3">
-              {" "}
-              <div
-                className="h-2.5 w-2.5 rounded-full animate-ping"
-                style={{
-                  backgroundColor: agent.color,
-                  boxShadow: `0 0 10px ${agent.color}`,
-                }}
-              />{" "}
-              <div className="flex-1">
-                {" "}
-                <div className="flex items-center justify-between">
-                  {" "}
-                  <span className="text-sm font-black text-foreground/90 tracking-wide">{agent.name}</span>{" "}
-                  <Badge
-                    variant={status === "running" ? "default" : "secondary"}
+        <div className="max-h-[420px] overflow-y-auto pr-2 space-y-3.5 scrollbar-thin scrollbar-thumb-purple-500/20 scrollbar-track-transparent">
+          {AGENT_TYPES.map((agent) => {
+            const trace = traces.find((t) => t.agentType === agent.id);
+            let status: any = trace?.status || "idle";
+            if (status === "idle") {
+              if (["critic", "consensus", "causal", "dream", "memory", "opportunity"].includes(agent.id)) {
+                status = "active";
+              } else {
+                status = "nominal";
+              }
+            }
+
+            return (
+              <div key={agent.id} className="flex items-center gap-3 group border border-border/5 bg-background/25 rounded-lg p-2 hover:bg-primary/5 hover:border-primary/10 transition-all duration-300">
+                <div
+                  className={cn(
+                    "h-2 w-2 rounded-full shrink-0",
+                    status === "running" ? "animate-ping" : "animate-pulse"
+                  )}
+                  style={{
+                    backgroundColor: agent.color,
+                    boxShadow: `0 0 8px ${agent.color}`,
+                  }}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-black text-foreground/90 tracking-wide truncate group-hover:text-primary-foreground transition-colors">
+                      {agent.name}
+                    </span>
+                    <Badge
+                      variant={status === "running" ? "default" : status === "active" ? "outline" : "secondary"}
+                      className={cn(
+                        "text-[9px] font-black uppercase px-2 py-0 h-4 tracking-widest shrink-0",
+                        status === "running"
+                          ? "bg-primary/20 text-primary-foreground border-border shadow-[0_0_8px_rgba(124,58,237,0.4)] animate-pulse"
+                          : status === "active"
+                            ? "bg-purple-950/20 text-purple-300 border-purple-500/30"
+                            : "bg-background/40 text-muted-foreground/60 border-border/10"
+                      )}
+                    >
+                      {status}
+                    </Badge>
+                  </div>
+                  <Progress
+                    value={
+                      status === "running" ? 65 : status === "active" ? 100 : status === "nominal" ? 100 : 0
+                    }
                     className={cn(
-                      "text-xs font-bold uppercase px-2 py-0.5 border tracking-wider",
-                      status === "running"
-                        ? "bg-primary/20 text-primary-foreground border-border shadow-[0_0_8px_rgba(124,58,237,0.4)] animate-pulse"
-                        : "bg-background text-muted-foreground border-border/20"
+                      "mt-1.5 h-1 bg-background border border-border/5",
+                      status === "running" && "[&>div]:bg-primary",
+                      status === "active" && "[&>div]:bg-purple-500/60",
+                      status === "nominal" && "[&>div]:bg-emerald-500/40"
                     )}
-                  >
-                    {" "}
-                    {status}
-                  </Badge>{" "}
-                </div>{" "}
-                <Progress
-                  value={
-                    status === "running" ? 65 : status === "success" ? 100 : 0
-                  }
-                  className="mt-2 h-1.5 bg-background border border-border/10"
-                />{" "}
-              </div>{" "}
-            </div>
-          );
-        })}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </CardContent>{" "}
     </Card>
   );
