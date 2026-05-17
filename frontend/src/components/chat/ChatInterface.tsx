@@ -32,6 +32,7 @@ export function ChatInterface() {
 
   // Agent Swarm Selector and Custom System Prompt States
   const [selectedAgent, setSelectedAgent] = useState("critic");
+  const [chatSize, setChatSize] = useState<"compact" | "normal" | "immersive">("normal");
   const [isPromptDrawerOpen, setIsPromptDrawerOpen] = useState(false);
   const [customSystemPrompts, setCustomSystemPrompts] = useState<Record<string, string>>({
     critic: "You are the swarm's Critic Agent. Your objective is to thoroughly stress-test every idea, proposal, and document, highlighting architectural blindspots, severe edge cases, and missing failure modes with constructive skepticism.",
@@ -114,7 +115,11 @@ export function ChatInterface() {
   };
 
   return (
-    <div className="flex h-full min-h-[75vh] flex-col rounded-xl border-2 border-border/50 bg-card shadow-[0_4px_30px_rgba(0,0,0,0.8)] overflow-hidden">
+    <div className={cn(
+      "flex flex-col rounded-xl border-2 border-border/50 bg-card shadow-[0_4px_30px_rgba(0,0,0,0.8)] overflow-hidden transition-all duration-500 ease-in-out",
+      chatSize === "compact" ? "min-h-[45vh] h-[45vh]" :
+      chatSize === "immersive" ? "min-h-[82vh] h-[82vh]" : "min-h-[68vh] h-[68vh]"
+    )}>
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border/20 bg-card/60 p-4">
         <div className="flex items-center gap-3">
@@ -195,19 +200,56 @@ export function ChatInterface() {
       {/* Agent swarm custom prompt controller */}
       <div className="border-b border-border/15 bg-background/40 p-4 space-y-3.5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-black text-primary-foreground/90 tracking-widest uppercase">Target Swarm Worker:</span>
-            <select
-              value={selectedAgent}
-              onChange={(e) => setSelectedAgent(e.target.value)}
-              className="bg-card border border-border/30 rounded-lg px-3 py-1.5 text-xs font-black text-amber-300 tracking-wider focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-300 cursor-pointer"
-            >
-              {AGENT_TYPES.map((agent) => (
-                <option key={agent.id} value={agent.id}>
-                  🤖 {agent.name} Agent
-                </option>
-              ))}
-            </select>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black text-primary-foreground/90 tracking-widest uppercase">Target Swarm Worker:</span>
+              <select
+                value={selectedAgent}
+                onChange={(e) => setSelectedAgent(e.target.value)}
+                className="bg-card border border-border/30 rounded-lg px-3 py-1.5 text-xs font-black text-amber-300 tracking-wider focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-300 cursor-pointer"
+              >
+                {AGENT_TYPES.map((agent) => (
+                  <option key={agent.id} value={agent.id}>
+                    🤖 {agent.name} Agent
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Chat Size Selector */}
+            <div className="flex items-center gap-1.5 border border-border/20 rounded-lg p-1 bg-background/30 shadow-inner">
+              <span className="text-[9px] font-black text-muted-foreground/80 tracking-widest uppercase px-1.5">Size:</span>
+              <button
+                type="button"
+                onClick={() => setChatSize("compact")}
+                className={cn(
+                  "px-2 py-0.5 text-[8px] font-black tracking-wider rounded transition-all duration-300 uppercase",
+                  chatSize === "compact" ? "bg-primary/20 text-primary-foreground border border-primary/30" : "text-muted-foreground/60 hover:text-primary-foreground"
+                )}
+              >
+                Compact
+              </button>
+              <button
+                type="button"
+                onClick={() => setChatSize("normal")}
+                className={cn(
+                  "px-2 py-0.5 text-[8px] font-black tracking-wider rounded transition-all duration-300 uppercase",
+                  chatSize === "normal" ? "bg-primary/20 text-primary-foreground border border-primary/30" : "text-muted-foreground/60 hover:text-primary-foreground"
+                )}
+              >
+                Normal
+              </button>
+              <button
+                type="button"
+                onClick={() => setChatSize("immersive")}
+                className={cn(
+                  "px-2 py-0.5 text-[8px] font-black tracking-wider rounded transition-all duration-300 uppercase",
+                  chatSize === "immersive" ? "bg-primary/20 text-primary-foreground border border-primary/30" : "text-muted-foreground/60 hover:text-primary-foreground"
+                )}
+              >
+                Immersive
+              </button>
+            </div>
           </div>
           
           <Button
