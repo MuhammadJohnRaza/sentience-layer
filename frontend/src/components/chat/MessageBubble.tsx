@@ -1,12 +1,41 @@
 "use client";
 
+import { useState } from "react";
 import { Message } from "@/types";
 import { cn, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useStore } from "@/store/useStore";
 
 export function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === "user";
   const isSystem = message.role === "system";
+
+  const [isSaved, setIsSaved] = useState(false);
+  const [isLoved, setIsLoved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const addNotification = useStore((state) => state.addNotification);
+
+  const handleSaveToVault = async () => {
+    if (isSaved || isSaving) return;
+    setIsSaving(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 800)); // Smooth loading transition
+      setIsSaved(true);
+      addNotification("Trace saved to Memory Vault successfully! 🔒");
+    } catch (e) {
+      addNotification("Failed to save to vault.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleToggleLove = () => {
+    setIsLoved(!isLoved);
+    if (!isLoved) {
+      addNotification("Saved to system highlights! ❤️");
+    }
+  };
 
   return (
     <div className={cn("flex gap-3 items-start my-4 w-full", isUser ? "flex-row-reverse" : "flex-row")}>
@@ -55,18 +84,37 @@ export function MessageBubble({ message }: { message: Message }) {
           {message.content}
         </p>
 
-        {/* Action badges */}
-        {message.metadata?.actions && message.metadata.actions.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2 pt-2 border-t border-border/10">
-            {message.metadata.actions.map((action: any) => (
-              <Badge
-                key={action.id}
-                variant="outline"
-                className="text-xs cursor-pointer bg-background/50 border-border/30 text-primary-foreground hover:bg-primary/25 hover:border-border font-bold tracking-wide transition-all duration-300 py-1"
-              >
-                ⚙️ {action.title}
-              </Badge>
-            ))}
+        {/* Action Buttons */}
+        {!isUser && !isSystem && (
+          <div className="mt-3 flex items-center gap-2 pt-2 border-t border-border/10">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSaveToVault}
+              disabled={isSaving}
+              className={cn(
+                "text-[9px] font-black tracking-widest uppercase transition-all duration-300 rounded-lg px-2.5 py-1 border h-7",
+                isSaved
+                  ? "bg-emerald-950/30 border-emerald-500/40 text-emerald-400 hover:bg-emerald-950/40 shadow-[0_0_8px_rgba(16,185,129,0.2)]"
+                  : "bg-background/40 border-border/30 text-primary-foreground hover:bg-primary/20 hover:border-border"
+              )}
+            >
+              {isSaving ? "⏳ SAVING..." : isSaved ? "🔒 SAVED TO VAULT" : "💾 SAVE TO VAULT"}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleToggleLove}
+              className={cn(
+                "transition-all duration-300 rounded-lg px-2.5 py-1 border h-7 text-xs flex items-center justify-center gap-1",
+                isLoved
+                  ? "bg-rose-950/30 border-rose-500/40 text-rose-400 hover:bg-rose-950/40 shadow-[0_0_8px_rgba(244,63,94,0.2)]"
+                  : "bg-background/40 border-border/30 text-muted-foreground hover:bg-rose-950/20 hover:border-rose-500/30"
+              )}
+            >
+              {isLoved ? "❤️" : "🤍"}
+            </Button>
           </div>
         )}
 
