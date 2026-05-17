@@ -3,7 +3,17 @@ import { Decision } from "@/types";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-export function DecisionTree({ decision }: { decision: Decision }) {
+export function DecisionTree({ decision }: { decision?: Decision }) {
+  if (!decision) {
+    return (
+      <div className="py-8 text-center border border-dashed border-border/20 bg-[#05050f]/20 rounded-xl">
+        <p className="text-xs font-bold text-muted-foreground/60 tracking-widest uppercase">
+          🧬 No alternative decision matrices compiled for this agent execution trace.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {" "}
