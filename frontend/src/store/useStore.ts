@@ -26,6 +26,7 @@ interface AppState {
   addNotification: (msg: string) => void;
   clearNotifications: () => void;
   // Global loading
+  // Global loading
   isLoading: boolean;
   setLoading: (loading: boolean) => void;
   // Active mission
@@ -34,6 +35,11 @@ interface AppState {
   // Real-time updates
   lastUpdate: number;
   bumpUpdate: () => void;
+  // Chat Persist
+  chatMessages: Message[];
+  isChatLoading: boolean;
+  setChatMessages: (updater: Message[] | ((prev: Message[]) => Message[])) => void;
+  setChatLoading: (loading: boolean) => void;
 }
 export const useStore = create<AppState>()(
   persist(
@@ -81,6 +87,13 @@ export const useStore = create<AppState>()(
         set({
           lastUpdate: Date.now(),
         }),
+      chatMessages: [],
+      isChatLoading: false,
+      setChatMessages: (updater) =>
+        set((s) => ({
+          chatMessages: typeof updater === "function" ? updater(s.chatMessages) : updater,
+        })),
+      setChatLoading: (loading) => set({ isChatLoading: loading }),
     }),
     {
       name: "sentience-store",
@@ -88,6 +101,7 @@ export const useStore = create<AppState>()(
         theme: state.theme,
         sidebarOpen: state.sidebarOpen,
         user: state.user,
+        chatMessages: state.chatMessages,
       }),
     },
   ),

@@ -3,9 +3,12 @@ import { useState, useCallback, useRef } from "react";
 import { Message } from "@/types";
 import { api } from "@/lib/api";
 import { generateId } from "@/lib/utils";
+import { useStore } from "@/store/useStore";
 export function useChat() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const messages = useStore((state) => state.chatMessages);
+  const isLoading = useStore((state) => state.isChatLoading);
+  const setMessages = useStore((state) => state.setChatMessages);
+  const setIsLoading = useStore((state) => state.setChatLoading);
   const abortRef = useRef<AbortController | null>(null);
   const sendMessage = useCallback(
     async (content: string) => {
