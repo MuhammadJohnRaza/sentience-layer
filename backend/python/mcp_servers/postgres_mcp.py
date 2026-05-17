@@ -131,6 +131,7 @@ class PostgresMcp:
                 )
             """)
 
+            cursor.execute("DROP TABLE IF EXISTS memory_nodes")
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS memory_nodes (
                     node_id TEXT PRIMARY KEY,
