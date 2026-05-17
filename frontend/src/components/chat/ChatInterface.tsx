@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/store/useStore";
 import { api } from "@/lib/api";
+import { AGENT_TYPES } from "@/lib/constants";
 
 export function ChatInterface() {
   const { messages, isLoading, sendMessage, clearChat } = useChat();
@@ -155,10 +156,27 @@ export function ChatInterface() {
       <div
         className={cn(
           "overflow-hidden transition-all duration-500 ease-in-out border-b border-border/10",
-          showControls ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
+          showControls ? "max-h-80 opacity-100" : "max-h-0 opacity-0"
         )}
       >
-        <div className="bg-background/40 px-4 py-3 space-y-2">
+        <div className="bg-background/40 px-4 py-3 space-y-3">
+          {/* Agent selector row */}
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] font-black tracking-widest text-muted-foreground/80 uppercase shrink-0">🤖 Target Worker:</span>
+            <select
+              value={selectedAgent}
+              onChange={(e) => setSelectedAgent(e.target.value)}
+              className="flex-1 bg-card border border-border/30 rounded-lg px-2.5 py-1 text-[11px] font-black text-amber-300 tracking-wider focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-300 cursor-pointer"
+            >
+              {AGENT_TYPES.map((agent) => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.name} Agent
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* System prompt label + reset */}
           <div className="flex items-center justify-between">
             <span className="text-[9px] font-black tracking-widest text-muted-foreground uppercase">⚙️ System Directive — <span className="text-amber-400">{selectedAgent}</span></span>
             <Button
