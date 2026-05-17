@@ -36,26 +36,37 @@ export default function PlaybookPage() {
     setLoadingStep(0);
     setIsExported(false);
 
-    // Dynamic reasoning milestones
-    const steps = [
-      "🔍 Inspecting active communication logs...",
-      "📁 Parsing uploaded vault documents & memory layers...",
-      "🧠 Constructing multi-agent critical path dependency network...",
-      "⚡ Finalizing 30-day autonomous action plan...",
-    ];
-
-    for (let i = 0; i < steps.length; i++) {
-      setLoadingStep(i);
-      await new Promise((resolve) => setTimeout(resolve, 900));
-    }
-
     try {
-      const response = await api.generatePlaybook();
-      setPlaybook(response);
-      addNotification("30-Day Swarm Playbook generated successfully! 🔮");
+      // 1. Trigger the background Celery task
+      const triggerResponse = await api.generatePlaybook();
+      const taskId = triggerResponse.task_id;
+
+      // 2. Poll the status from Redis via our task checking API
+      const pollInterval = setInterval(async () => {
+        try {
+          const statusResponse = await api.getPlaybookTaskStatus(taskId);
+          
+          if (statusResponse.state === "PROGRESS") {
+            // Map progress percentage (25%, 50%, 75%, 100%) to steps index (0, 1, 2, 3)
+            const mappedStep = Math.max(0, Math.floor(statusResponse.progress / 25) - 1);
+            setLoadingStep(mappedStep);
+          } else if (statusResponse.state === "SUCCESS") {
+            clearInterval(pollInterval);
+            setPlaybook(statusResponse.result);
+            setLoading(false);
+            addNotification("30-Day Swarm Playbook generated successfully! 🔮");
+          } else if (statusResponse.state === "FAILURE") {
+            clearInterval(pollInterval);
+            setLoading(false);
+            addNotification(`Swarm Playbook generation failed: ${statusResponse.error || "Unknown task error"}`);
+          }
+        } catch (pollErr) {
+          console.error("Polling error:", pollErr);
+        }
+      }, 1000);
     } catch (error) {
+      console.error("Failed to start playbook task:", error);
       addNotification("Playbook generation failed.");
-    } finally {
       setLoading(false);
     }
   };

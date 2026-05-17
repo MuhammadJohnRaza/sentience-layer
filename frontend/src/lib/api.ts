@@ -107,9 +107,11 @@ export const api = {
 
   // Playbook
   generatePlaybook: () =>
-    fetchApi("/api/playbook/generate", {
+    fetchApi<any>("/api/playbook/generate", {
       method: "POST",
     }),
+  getPlaybookTaskStatus: (taskId: string) =>
+    fetchApi<any>(`/api/playbook/tasks/${taskId}`),
 
   // Health
   health: () => fetchApi("/api/health"),
