@@ -17,19 +17,20 @@ async def main():
     print("\n--- Testing OpenRouter Generation (meta-llama/Llama-3-8b-instruct) ---")
     response = await client.generate("Hello, just say 'Connection successful' and nothing else.")
     
-    if response.success:
-        print("✅ SUCCESS!")
-        print(f"Latency: {response.latency_ms:.2f}ms")
-        try:
-            message = response.data.get('choices', [{}])[0].get('message', {}).get('content', '')
-            print(f"Response: {message}")
-        except Exception as e:
-            print(f"Response object: {response.data}")
-    else:
-        print("❌ FAILED!")
-        print(f"Error: {response.error}")
-        
-    await client.shutdown()
+    try:
+        if response.success:
+            print("[SUCCESS] Connection successful!")
+            print(f"Latency: {response.latency_ms:.2f}ms")
+            try:
+                message = response.data.get('choices', [{}])[0].get('message', {}).get('content', '')
+                print(f"Response: {message}")
+            except Exception as e:
+                print(f"Response object: {response.data}")
+        else:
+            print("[FAILED] Request failed!")
+            print(f"Error: {response.error}")
+    finally:
+        await client.shutdown()
 
 if __name__ == "__main__":
     asyncio.run(main())

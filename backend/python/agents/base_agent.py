@@ -447,7 +447,9 @@ Respond with JSON: {{"action": "tool_name", "input": {{}}, "reasoning": "why"}}"
 
         self._running = True
         await self.initialize()
-        
+        asyncio.create_task(self._process_message_queue())
+
+    async def _process_message_queue(self):
         while self._running:
             try:
                 message = await asyncio.wait_for(

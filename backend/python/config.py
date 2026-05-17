@@ -1,21 +1,18 @@
-"""
-Auto-generated implementation for config
-"""
-from typing import Any, Dict, List, Optional
+import os
+from dotenv import load_dotenv
 
-class Config:
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        self.config = config or {}
-        self.is_initialized = False
+# Load environment variables from .env file
+load_dotenv()
 
-    def initialize(self) -> bool:
-        self.is_initialized = True
-        return True
+class Settings:
+    def __init__(self):
+        self.OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+        self.ANTIGRAVITY_API_KEY = os.getenv("ANTIGRAVITY_API_KEY", "")
+        self.GOOGLE_ANTIGRAVITY_API_KEY = os.getenv("GOOGLE_ANTIGRAVITY_API_KEY", "")
+        self.APP_NAME = os.getenv("APP_NAME", "Sentience Layer")
+        self.DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes")
+        self.HOST = os.getenv("HOST", "0.0.0.0")
+        self.PORT = int(os.getenv("PORT", "8000"))
+        self.LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
-    def execute(self, *args, **kwargs) -> Any:
-        if not self.is_initialized:
-            self.initialize()
-        return {"status": "success", "module": "config", "message": "Executed successfully."}
-
-def get_instance() -> Config:
-    return Config()
+settings = Settings()

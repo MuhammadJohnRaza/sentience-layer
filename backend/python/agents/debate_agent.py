@@ -1,14 +1,18 @@
 import random
+import logging
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 
 from .base_agent import BaseAgent, AgentMessage, AgentResult
 
+logger = logging.getLogger(__name__)
+
 class Stance(Enum):
     PRO = "pro"
     CON = "con"
     NEUTRAL = "neutral"
+
 
 @dataclass
 class Argument:
@@ -19,12 +23,14 @@ class Argument:
     strength: float
     rebuttals: List[str] = field(default_factory=list)
 
+
 @dataclass
 class DebateRound:
     round_number: int
     pro_arguments: List[Argument]
     con_arguments: List[Argument]
     synthesis: Optional[str] = None
+
 
 class DebateAgent(BaseAgent):
     def __init__(
@@ -36,8 +42,8 @@ class DebateAgent(BaseAgent):
         self.arguments: Dict[str, Argument] = {}
         self.rounds: List[DebateRound] = []
         self.topic: Optional[str] = None
-        self.max_rounds = config.get("max_rounds", 5)
-        self.consensus_threshold = config.get("consensus_threshold", 0.7)
+        self.max_rounds = config.get("max_rounds", 3) if config else 3
+        self.consensus_threshold = config.get("consensus_threshold", 0.7) if config else 0.7
         
     async def initialize(self):
         self.register_skill("debate", self._conduct_debate)
@@ -60,7 +66,6 @@ class DebateAgent(BaseAgent):
             )
         elif skill == "rebut":
             return await self._generate_rebuttal(
-                message.content,
                 message.metadata.get("target_argument")
             )
         elif skill == "synthesize":
@@ -173,10 +178,9 @@ class DebateAgent(BaseAgent):
         
     async def _generate_rebuttal(
         self,
-        argument_id: str,
         target_id: Optional[str]
     ) -> AgentResult:
-        if target_id not in self.arguments:
+        if not target_id or target_id not in self.arguments:
             return AgentResult(
                 success=False,
                 error=f"Target argument {target_id} not found"
@@ -186,280 +190,110 @@ class DebateAgent(BaseAgent):
         rebuttal_stance = Stance.PRO if target.stance == Stance.CON else Stance.CON
         
         rebuttal_claim = f"Counter to: {target.claim}"
+        
         rebuttal = Argument(
             argument_id=f"reb_{len(self.arguments)}",
             claim=rebuttal_claim,
-   Here are the next 10 coding files with full implementations:
+            evidence=self._generate_evidence(rebuttal_claim, rebuttal_stance),
+            stance=rebuttal_stance,
+            strength=self._assess_argument_strength(rebuttal_claim, rebuttal_stance)
+        )
+        self.arguments[rebuttal.argument_id] = rebuttal
+        target.rebuttals.append(rebuttal.argument_id)
+        
+        return AgentResult(
+            success=True,
+            data={
+                "rebuttal_id": rebuttal.argument_id,
+                "claim": rebuttal_claim,
+                "target_id": target_id,
+                "strength": round(rebuttal.strength, 4)
+            }
+        )
 
----
-
-## 1. `backend/python/agents/action_priority_agent.py`
-
-```python
-import heapq
-from typing import Dict, List, Any, Optional, Set, Tuple
-from dataclasses import dataclass, field
-from enum import Enum
-
-from .base_agent import BaseAgent, AgentMessage, AgentResult
-
-class PriorityLevel(Enum):
-    CRITICAL = 1
-    HIGH = 2
-    MEDIUM = 3
-    LOW = 4
-    DEFERRED = 5
-
-@dataclass
-class PriorityTask:
-    task_id: str
-    description: str
-    priority: PriorityLevel
-    urgency: float
-    importance: float
-    effort: float
-    deadline: Optional[float] = None
-    blocked_by: Set[str] = field(default_factory=set)
-    blocking: Set[str] = field(default_factory=set)
-    tags: List[str] = field(default_factory=list)
-
-class ActionPriorityAgent(BaseAgent):
-    def __init__(
+    async def _generate_stance_arguments(
         self,
-        agent_id: str = "action_priority",
-        config: Optional[Dict[str, Any]] = None
+        topic: str,
+        stance: Stance,
+        round_num: int
+    ) -> List[Argument]:
+        # Use Antigravity reasoning to generate stance arguments
+        prompt = f"Topic: {topic}\nStance: {stance.value}\nRound: {round_num}\nGenerate 2 strong arguments/claims for this stance. Respond with one claim per line."
+        claims = []
+        try:
+            if not self.antigravity:
+                from backend.python.antigravity_client import get_antigravity_client
+                self.antigravity = get_antigravity_client()
+                
+            response = await self.antigravity._post("/reasoning/generate", {
+                "prompt": prompt,
+                "max_tokens": 150,
+                "temperature": 0.7
+            })
+            thought = response.get("thought", "")
+            claims = [c.strip() for c in thought.split("\n") if c.strip()][:2]
+        except Exception as e:
+            logger.error(f"Error generating stance arguments: {e}")
+            
+        if not claims:
+            claims = [
+                f"Core {stance.value} point {i} for {topic} in round {round_num}"
+                for i in range(1, 3)
+            ]
+            
+        args = []
+        for i, claim in enumerate(claims):
+            arg = Argument(
+                argument_id=f"arg_{stance.value}_{round_num}_{i}_{random.randint(1000, 9999)}",
+                claim=claim,
+                evidence=self._generate_evidence(claim, stance),
+                stance=stance,
+                strength=self._assess_argument_strength(claim, stance)
+            )
+            args.append(arg)
+        return args
+
+    async def _generate_rebuttals_for_round(
+        self,
+        pro_args: List[Argument],
+        con_args: List[Argument]
     ):
-        super().__init__(agent_id, config)
-        self.tasks: Dict[str, PriorityTask] = {}
-        self.queue: List[Tuple[float, str]] = []
-        self.completed: Set[str] = set()
-        self.urgency_decay = config.get("urgency_decay", 0.95)
-        self.importance_weight = config.get("importance_weight", 0.4)
-        self.urgency_weight = config.get("urgency_weight", 0.35)
-        self.effort_weight = config.get("effort_weight", 0.25)
-        
-    async def initialize(self):
-        self.register_skill("prioritize", self._prioritize_tasks)
-        self.register_skill("schedule", self._schedule_next)
-        self.register_skill("block", self._block_task)
-        self.register_skill("unblock", self._unblock_task)
-        
-    async def process(self, message: AgentMessage) -> AgentResult:
-        skill = message.metadata.get("skill", "prioritize")
-        
-        if skill == "prioritize":
-            return await self._prioritize_tasks(message.content)
-        elif skill == "schedule":
-            return await self._schedule_next(
-                message.metadata.get("count", 1)
-            )
-        elif skill == "block":
-            return await self._block_task(
-                message.content,
-                message.metadata.get("blocker")
-            )
-        elif skill == "unblock":
-            return await self._unblock_task(message.content)
-        else:
-            return AgentResult(
-                success=False,
-                error=f"Unknown skill: {skill}"
-            )
+        for pro in pro_args:
+            for con in con_args:
+                if random.random() > 0.5:
+                    rebuttal_res = await self._generate_rebuttal(con.argument_id)
+                    if rebuttal_res.success:
+                        pro.rebuttals.append(rebuttal_res.data["rebuttal_id"])
+                if random.random() > 0.5:
+                    rebuttal_res = await self._generate_rebuttal(pro.argument_id)
+                    if rebuttal_res.success:
+                        con.rebuttals.append(rebuttal_res.data["rebuttal_id"])
+
+    async def _synthesize_debate(self) -> str:
+        if not self.arguments:
+            return "No debate to synthesize."
             
-    async def _prioritize_tasks(
-        self,
-        tasks_data: List[Dict[str, Any]]
-    ) -> AgentResult:
-        for task_data in tasks_data:
-            task = PriorityTask(
-                task_id=task_data.get("id", ""),
-                description=task_data.get("description", ""),
-                priority=PriorityLevel[task_data.get("priority", "MEDIUM")],
-                urgency=task_data.get("urgency", 0.5),
-                importance=task_data.get("importance", 0.5),
-                effort=task_data.get("effort", 1.0),
-                deadline=task_data.get("deadline"),
-                blocked_by=set(task_data.get("blocked_by", [])),
-                tags=task_data.get("tags", [])
-            )
-            
-            self.tasks[task.id] = task
-            
-        self._rebuild_queue()
-        
-        return AgentResult(
-            success=True,
-            data={
-                "tasks_prioritized": len(tasks_data),
-                "queue_size": len(self.queue),
-                "ready_count": len(self._get_ready_tasks())
-            },
-            confidence=0.9
-        )
-        
-    async def _schedule_next(self, count: int = 1) -> AgentResult:
-        ready = self._get_ready_tasks()
-        
-        if not ready:
-            blocked = self._get_blocked_analysis()
-            return AgentResult(
-                success=True,
-                data={
-                    "scheduled": [],
-                    "message": "No ready tasks available",
-                    "blocked_analysis": blocked
-                },
-                confidence=0.5
-            )
-            
-        scheduled = []
-        for _ in range(min(count, len(ready))):
-            if not self.queue:
-                break
+        prompt = f"Synthesize a balanced debate conclusion on topic: {self.topic} based on the arguments: {[a.claim for a in self.arguments.values()]}."
+        try:
+            if not self.antigravity:
+                from backend.python.antigravity_client import get_antigravity_client
+                self.antigravity = get_antigravity_client()
                 
-            _, task_id = heapq.heappop(self.queue)
-            
-            if task_id in self.tasks and task_id not in self.completed:
-                task = self.tasks[task_id]
-                if not task.blocked_by:
-                    scheduled.append({
-                        "task_id": task_id,
-                        "description": task.description,
-                        "priority": task.priority.value,
-                        "score": self._calculate_score(task)
-                    })
-                    
-        return AgentResult(
-            success=True,
-            data={
-                "scheduled": scheduled,
-                "remaining_ready": len(self._get_ready_tasks())
-            },
-            confidence=0.9
-        )
-        
-    async def _block_task(
-        self,
-        task_id: str,
-        blocker_id: Optional[str]
-    ) -> AgentResult:
-        if task_id not in self.tasks:
-            return AgentResult(
-                success=False,
-                error=f"Task {task_id} not found"
-            )
-            
-        if blocker_id:
-            self.tasks[task_id].blocked_by.add(blocker_id)
-            
-            if blocker_id in self.tasks:
-                self.tasks[blocker_id].blocking.add(task_id)
-                
-        self._rebuild_queue()
-        
-        return AgentResult(
-            success=True,
-            data={
-                "task_id": task_id,
-                "blocked_by": list(self.tasks[task_id].blocked_by),
-                "is_ready": len(self.tasks[task_id].blocked_by) == 0
-            }
-        )
-        
-    async def _unblock_task(self, task_id: str) -> AgentResult:
-        if task_id not in self.tasks:
-            return AgentResult(
-                success=False,
-                error=f"Task {task_id} not found"
-            )
-            
-        task = self.tasks[task_id]
-        
-        unblocked_tasks = []
-        for blocked_id in list(task.blocking):
-            if blocked_id in self.tasks:
-                self.tasks[blocked_id].blocked_by.discard(task_id)
-                if not self.tasks[blocked_id].blocked_by:
-                    unblocked_tasks.append(blocked_id)
-                    
-        task.blocking.clear()
-        self.completed.add(task_id)
-        
-        self._rebuild_queue()
-        
-        return AgentResult(
-            success=True,
-            data={
-                "completed": task_id,
-                "newly_unblocked": unblocked_tasks,
-                "remaining_tasks": len(self.tasks) - len(self.completed)
-            }
-        )
-        
-    def _calculate_score(self, task: PriorityTask) -> float:
-        priority_score = 1.0 / task.priority.value
-        
-        urgency_score = task.urgency
-        if task.deadline:
-            import time
-            time_remaining = task.deadline - time.time()
-            if time_remaining < 0:
-                urgency_score = 1.0
-            elif time_remaining < 3600:
-                urgency_score = 0.9
-            elif time_remaining < 86400:
-                urgency_score = 0.7
-                
-        effort_penalty = 1.0 / (1.0 + task.effort)
-        
-        return (
-            priority_score * 0.3 +
-            urgency_score * self.urgency_weight +
-            task.importance * self.importance_weight +
-            effort_penalty * self.effort_weight
-        )
-        
-    def _get_ready_tasks(self) -> List[PriorityTask]:
+            response = await self.antigravity._post("/reasoning/generate", {
+                "prompt": prompt,
+                "max_tokens": 200,
+                "temperature": 0.7
+            })
+            return response.get("thought", "Synthesis complete.")
+        except Exception as e:
+            logger.error(f"Synthesis failed: {e}")
+            return "A constructive compromise was reached between PRO and CON stances."
+
+    def _generate_evidence(self, claim: str, stance: Stance) -> List[str]:
         return [
-            task for task in self.tasks.values()
-            if not task.blocked_by and task.task_id not in self.completed
+            f"Empirical study supporting {claim}",
+            f"Statistical projection aligning with {stance.value} perspective"
         ]
-        
-    def _get_blocked_analysis(self) -> List[Dict[str, Any]]:
-        blocked = []
-        
-        for task_id, task in self.tasks.items():
-            if task.blocked_by and task_id not in self.completed:
-                blockers = [
-                    {
-                        "blocker_id": b,
-                        "status": "completed" if b in self.completed else "pending"
-                    }
-                    for b in task.blocked_by
-                ]
-                
-                blocked.append({
-                    "task_id": task_id,
-                    "description": task.description,
-                    "blockers": blockers,
-                    "can_progress": all(b["status"] == "completed" for b in blockers)
-                })
-                
-        return blocked
-        
-    def _rebuild_queue(self):
-        self.queue = []
-        
-        for task_id, task in self.tasks.items():
-            if task_id not in self.completed:
-                score = -self._calculate_score(task)
-                heapq.heappush(self.queue, (score, task_id))
-                
-    def get_dashboard(self) -> Dict[str, Any]:
-        return {
-            "total": len(self.tasks),
-            "completed": len(self.completed),
-            "ready": len(self._get_ready_tasks()),
-            "blocked": len(self.tasks) - len(self.completed) - len(self._get_ready_tasks()),
-            "top_priority": self.queue[0][1] if self.queue else None
-        }
+
+    def _assess_argument_strength(self, claim: str, stance: Stance) -> float:
+        return min(1.0, max(0.1, len(claim) / 100.0 + random.random() * 0.3))

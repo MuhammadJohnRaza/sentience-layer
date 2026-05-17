@@ -241,4 +241,18 @@ class ActionCategoryAgent(BaseAgent):
         ]
         
         for cat in defaults:
-            self._define_category(cat)
+            cat_id = cat["id"]
+            self.categories[cat_id] = {
+                "id": cat_id,
+                "name": cat.get("name", cat_id),
+                "description": cat.get("description", ""),
+                "parent": cat.get("parent"),
+                "keywords": set(cat.get("keywords", [])),
+                "rules": cat.get("rules", []),
+                "examples": cat.get("examples", [])
+            }
+            for keyword in cat.get("keywords", []):
+                self.keywords[cat_id].add(keyword.lower())
+            parent = cat.get("parent")
+            if parent:
+                self.taxonomy[parent].append(cat_id)

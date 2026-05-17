@@ -368,10 +368,13 @@ class CausalInferenceAgent(BaseAgent):
             return None
             
         mean_val = np.mean(cause_history)
-        shocks = [
-            i for i, v in enumerate(cause_history)
-            if abs(v - mean_val) > 2 * np.std(cause_history) if np.std(cause_history) > 0 else False
-        ]
+        std_val = np.std(cause_history)
+        shocks = []
+        if std_val > 0:
+            shocks = [
+                i for i, v in enumerate(cause_history)
+                if abs(v - mean_val) > 2 * std_val
+            ]
         
         if shocks:
             return {
