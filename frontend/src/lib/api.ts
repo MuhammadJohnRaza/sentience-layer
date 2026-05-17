@@ -270,6 +270,108 @@ async function fetchApi<T>(
       } as any;
     }
     
+    // Execute Action Mock Fallback
+    if (endpoint.includes("/api/actions/") && endpoint.includes("/execute")) {
+      return { status: "success", executed: true } as any;
+    }
+
+    // Actions List Mock Fallback
+    if (endpoint.includes("/api/actions")) {
+      return [
+        {
+          id: "act_caching",
+          title: "Scale Postgres Connection Pooling",
+          description: "Scale database thread registries, enforce sandbox connection limits, and configure index planning caches.",
+          status: "pending",
+          steps: [
+            { id: "s1", status: "completed", description: "Audit active database checkout pools" },
+            { id: "s2", status: "pending", description: "Inject local query caching plan overrides" }
+          ],
+          impactScore: 92,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: "act_containment",
+          title: "Trigger Doubt Room Sandbox Containment",
+          description: "Isolate anomalous SQLite query structures inside secure sandboxed lockouts to prevent general container crashes.",
+          status: "pending",
+          steps: [
+            { id: "s1", status: "completed", description: "Detect transaction sequence drift" },
+            { id: "s2", status: "pending", description: "Activate Doubt Room virtual containment vault" }
+          ],
+          impactScore: 96,
+          createdAt: new Date(Date.now() - 3600000).toISOString()
+        },
+        {
+          id: "act_dream",
+          title: "Consolidate Memory Dream Vectors",
+          description: "Unify temporary local transaction vectors into the core relational SQLite memory database.",
+          status: "completed",
+          steps: [
+            { id: "s1", status: "completed", description: "Cluster local embedding memory blocks" },
+            { id: "s2", status: "completed", description: "Commit unified memory nodes to primary vault" }
+          ],
+          impactScore: 89,
+          createdAt: new Date(Date.now() - 7200000).toISOString()
+        }
+      ] as any;
+    }
+
+    // Agent Traces Mock Fallback
+    if (endpoint.includes("/api/agents/traces")) {
+      return [
+        {
+          id: "trace_caching",
+          agentName: "SwarmOrchestrator",
+          agentType: "SwarmOrchestrator",
+          startTime: new Date().toISOString(),
+          status: "success",
+          reasoning: [
+            { step: 1, confidence: 0.98, thought: "Ingesting user checkout query metric streams.", action: "Scan checkout pools", observation: "Postgres pools saturated at 98% utilization limit." },
+            { step: 2, confidence: 0.95, thought: "Determining direct causal relationship to active conversion rates drop.", action: "Calculate path coefficients", observation: "Negative coefficient (-0.74) confirms high causal load." },
+            { step: 3, confidence: 0.92, thought: "Formulating consensus indexing cache playbook remediations.", action: "Compile playbook tasks", observation: "Exported database query cache plan recommendations." }
+          ],
+          decision: {
+            confidence: 0.96,
+            chosen: "Scale connection pooling limits and inject cacheplan overrides.",
+            framework: "Causal Decisional Matrix",
+            alternatives: [
+              "Perform manual index sweep (Risk: High latency lag)",
+              "Temporarily throttle checkout rate-limiters (Risk: Economic revenue drop)"
+            ]
+          }
+        },
+        {
+          id: "trace_health",
+          agentName: "CriticAgent",
+          agentType: "CriticAgent",
+          startTime: new Date(Date.now() - 1800000).toISOString(),
+          status: "success",
+          reasoning: [
+            { step: 1, confidence: 0.99, thought: "Auditing active SQLite container containment loops.", action: "Query Doubt Room registry", observation: "Quarantine registries fully aligned. 0 transaction drift anomalies found." }
+          ],
+          decision: {
+            confidence: 0.99,
+            chosen: "Confirm healthy baseline telemetry state.",
+            framework: "Containment Validation Framework",
+            alternatives: [
+              "Force complete node rollback restart (Risk: Temporary service outage)"
+            ]
+          }
+        }
+      ] as any;
+    }
+
+    // Agent Status Mock Fallback
+    if (endpoint.includes("/api/agents/status")) {
+      return [
+        { id: "critic", name: "Critic Agent", status: "active", version: "4.0.0" },
+        { id: "consensus", name: "Consensus Agent", status: "active", version: "4.0.0" },
+        { id: "dream", name: "Dream Agent", status: "active", version: "4.0.0" },
+        { id: "causal", name: "Causal Agent", status: "active", version: "4.0.0" }
+      ] as any;
+    }
+
     // Safe empty fallbacks for list endpoints to prevent render breaks
     if (
       endpoint.includes("/api/chat/history") || 
