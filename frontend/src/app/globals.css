@@ -172,3 +172,28 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(124, 58, 237, 0.7);
 }
+
+/* ==========================================================================
+   PERFECTION MICRO-INTERACTIONS & CURSOR EXPERIENCE
+   ========================================================================== */
+
+/* Liquid Gold Selection Highlight */
+::selection {
+  background: rgba(124, 58, 237, 0.65) !important;
+  color: #FCD34D !important;
+  text-shadow: 0 0 8px rgba(252, 230, 138, 0.8) !important;
+}
+
+/* Smooth Cursor Hover Transitions & Scaling */
+a, button, input, textarea, select, [role="button"], .card, .badge {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+a:hover, button:hover {
+  transform: translateY(-2px) scale(1.02);
+  filter: brightness(1.1);
+}
+
+input:focus, textarea:focus {
+  transform: scale(1.005);
+}

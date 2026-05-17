@@ -1,29 +1,30 @@
-/** * Suggested Actions Chips */ "use client";
+"use client";
+
 import { Button } from "@/components/ui/button";
+
 const SUGGESTIONS = [
-  "Analyze my recent actions",
-  "Run opportunity scan",
-  "Show causal graph",
-  "Start dream consolidation",
-  "Check system health",
+  "🔍 Analyze recent actions",
+  "🔮 Run opportunity scan",
+  "🕸️ Show causal graph",
+  "🌌 Start dream consolidation",
+  "❤️ Check system health",
 ];
+
 export function SuggestedActions({
   onAction,
 }: {
   onAction: (text: string) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {" "}
+    <div className="flex flex-wrap gap-2 py-1">
       {SUGGESTIONS.map((suggestion) => (
         <Button
           key={suggestion}
           variant="outline"
           size="sm"
-          className="text-xs rounded-full"
+          className="text-xs rounded-full border border-border/30 bg-background/50 hover:bg-primary/20 hover:text-primary-foreground hover:border-border hover:shadow-[0_0_12px_rgba(124,58,237,0.3)] transition-all duration-300 font-semibold tracking-wide"
           onClick={() => onAction(suggestion)}
         >
-          {" "}
           {suggestion}
         </Button>
       ))}
