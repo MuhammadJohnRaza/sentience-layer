@@ -35,6 +35,28 @@ export function SpotChat() {
       timestamp: new Date().toISOString(),
       platform: "Google Antigravity",
       core_orchestrator: "SwarmOrchestrator",
+      plan_steps: [
+        "Plan Step 1: Ingest Anomaly",
+        "Plan Step 2: Causal Audit",
+        "Plan Step 3: Doubt Sandbox",
+        "Plan Step 4: Dispatch Playbook"
+      ],
+      decision_flow: {
+        rationale: "Targeted database caching and SQL indexing rules were dynamically chosen over alternative interventions.",
+        causal_evidence: "Causal coefficient of 0.94 proved that unindexed read-scanning on checkout transaction columns was saturated, meaning caching resolves the source failure directly, saving estimated operational CRM budgets by 84%.",
+        alternatives_evaluated: [
+          {
+            intervention: "Raw Connection Pool Expansion",
+            status: "REJECTED",
+            reason: "Fails to clear saturated read locks, leading to absolute thread exhaustion under high load."
+          },
+          {
+            intervention: "Global Price Discounts",
+            status: "REJECTED",
+            reason: "Fails to address technical database bottleneck, risking margin loss without resolving checkout dropouts."
+          }
+        ]
+      },
       incidents: [
         {
           id: "incident_checkout_saturation",
@@ -43,7 +65,7 @@ export function SpotChat() {
             {
               step: 1,
               agent: "CriticAgent",
-              action: "Telemetry Anomaly Detection",
+              action: "Plan Step 1: Ingest Anomaly",
               evidence: "Relational registry read query scanning unindexed transaction columns.",
               implication: "High-concurrency read operations blocking checkout registry thread writes.",
               severity: "CRITICAL"
@@ -51,14 +73,21 @@ export function SpotChat() {
             {
               step: 2,
               agent: "CausalInferenceAgent",
-              action: "Causal Link Mapping",
+              action: "Plan Step 2: Causal Audit",
               causal_coefficient: 0.94,
               financial_implication: "$24,580.00 projected daily revenue loss."
             },
             {
               step: 3,
+              agent: "DoubtAgent",
+              action: "Plan Step 3: Doubt Sandbox",
+              quarantine_status: "LOCKED",
+              sandbox: "Doubt Room Isolated Thread Pool"
+            },
+            {
+              step: 4,
               agent: "ConsensusAgent",
-              action: "Swarm Voting Consensus",
+              action: "Plan Step 4: Dispatch Playbook",
               votes: {
                 "CriticAgent": "APPROVE",
                 "OpportunityAnalystAgent": "APPROVE",
@@ -66,21 +95,6 @@ export function SpotChat() {
                 "DoubtAgent": "APPROVE"
               },
               authorized_playbook: "Postgres Caching Index Optimization"
-            },
-            {
-              step: 4,
-              agent: "DoubtAgent",
-              action: "Sandbox Containment Lock",
-              quarantine_status: "LOCKED",
-              sandbox: "Doubt Room Isolated Thread Pool"
-            },
-            {
-              step: 5,
-              agent: "ActionExecutionAgent",
-              action: "Playbook Execution",
-              simulated_task: "CRM Targeted Discount Incentive campaign and Postgres Cache tuning.",
-              target_cohort: "Incentivized Cart Leavers",
-              projected_recovery: "+12.5% Conversion Boost"
             }
           ],
           system_state_change: {
@@ -91,7 +105,7 @@ export function SpotChat() {
               loss_usd: 24580.0
             },
             after: {
-              checkout_latency_ms: 18.2,
+              checkout_latency_ms: 22.4,
               connection_utilization_pct: 11.2,
               cart_abandonment_pct: 2.8,
               recovered_usd: 24580.0,
