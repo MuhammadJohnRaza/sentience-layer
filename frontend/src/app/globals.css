@@ -57,3 +57,118 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ==========================================================================
+   PREMIUM COGNITIVE OS GLOBAL THEME OVERRIDES (BLACK, PURPLE, GOLD)
+   ========================================================================== */
+
+/* 1. Global Dark Background Safety Net */
+html, body {
+  background-color: #000000 !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* 2. Absolute White-Screen Elimination & Card Overrides */
+.bg-white,
+.bg-slate-50,
+.bg-slate-100,
+.bg-slate-200,
+.bg-zinc-50,
+.bg-zinc-100,
+.bg-gray-50,
+.bg-gray-100,
+.bg-card {
+  background-color: hsl(var(--card)) !important;
+}
+
+.bg-background {
+  background-color: #000000 !important;
+}
+
+/* 3. Premium Golden & Golden-tinged Fonts Override */
+.text-slate-900,
+.text-slate-800,
+.text-slate-700,
+.text-zinc-900,
+.text-zinc-800,
+.text-zinc-700,
+.text-gray-900,
+.text-gray-800,
+.text-gray-700,
+h1, h2, h3, h4, h5, h6 {
+  color: hsl(var(--primary-foreground)) !important; /* Golden: #FCD34D */
+}
+
+.text-slate-600,
+.text-slate-500,
+.text-zinc-600,
+.text-zinc-500,
+.text-gray-600,
+.text-gray-500,
+.text-muted-foreground {
+  color: hsl(var(--muted-foreground)) !important; /* Light Silver/Muted: #D4D4D8 */
+}
+
+/* 4. Translucent Glowing Purple Borders Override */
+.border-slate-100,
+.border-slate-200,
+.border-zinc-100,
+.border-zinc-200,
+.border-gray-100,
+.border-gray-200,
+.border,
+.border-t,
+.border-b,
+.border-l,
+.border-r {
+  border-color: rgba(124, 58, 237, 0.25) !important; /* Glowing Purple Border */
+}
+
+/* 5. Custom Interactive/Active states */
+.hover\:bg-slate-100:hover,
+.hover\:bg-zinc-100:hover,
+.hover\:bg-gray-100:hover {
+  background-color: rgba(124, 58, 237, 0.15) !important;
+}
+
+/* 6. Glowing Neon Charts Support */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: rgba(124, 58, 237, 0.15) !important;
+}
+
+.recharts-legend-item-text,
+.recharts-label,
+.recharts-text {
+  fill: hsl(var(--foreground)) !important;
+}
+
+.recharts-tooltip-cursor {
+  stroke: rgba(124, 58, 237, 0.3) !important;
+}
+
+.recharts-default-tooltip {
+  background-color: #08060b !important;
+  border: 2px solid #7c3aed !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8) !important;
+  border-radius: 0.5rem !important;
+}
+
+/* 7. Scrollbar Premium Custom Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.4);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 58, 237, 0.7);
+}
