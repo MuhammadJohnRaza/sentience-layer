@@ -188,13 +188,40 @@ class MCPToolRegistry:
 
         logger.info(f"Registered MCP server '{name}' with {len(tools)} tools")
 
+    def register_local_server(self, name: str, server_instance: Any):
+        """Register a local Python-based MCP server without WebSockets"""
+        self.clients[name] = server_instance
+
+        # Initialize local server if needed
+        if hasattr(server_instance, "initialize"):
+            server_instance.initialize()
+
+        # Cache tools
+        tools = []
+        if hasattr(server_instance, "list_tools"):
+            tools = server_instance.list_tools()
+            for tool in tools:
+                tool_name = tool["name"]
+                self._all_tools[tool_name] = (server_instance, tool)
+
+        logger.info(f"Registered local Python MCP server '{name}' with {len(tools)} tools")
+
     async def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Any:
         """Call a tool by name (auto-routes to correct server)"""
         if tool_name not in self._all_tools:
             raise Exception(f"Tool not found: {tool_name}")
 
         client, tool_info = self._all_tools[tool_name]
-        return await client.call_tool(tool_name, arguments)
+        
+        # Check if the tool execution is asynchronous or synchronous
+        if hasattr(client, "call_tool") and asyncio.iscoroutinefunction(client.call_tool):
+            return await client.call_tool(tool_name, arguments)
+        else:
+            # Check if it's a local Python client or a WebSocket client
+            if hasattr(client, "ws") and client.ws:
+                return await client.call_tool(tool_name, arguments)
+            else:
+                return client.call_tool(tool_name, arguments)
 
     def list_all_tools(self) -> List[Dict]:
         """List all tools from all servers"""
@@ -203,7 +230,8 @@ class MCPToolRegistry:
     async def disconnect_all(self):
         """Disconnect from all servers"""
         for client in self.clients.values():
-            await client.disconnect()
+            if hasattr(client, "disconnect"):
+                await client.disconnect()
 
 
 # Global registry

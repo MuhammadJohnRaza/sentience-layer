@@ -169,8 +169,9 @@ class AntigravityClient:
                 return "The debate highlights the balance between proactive causal reasoning and rigorous self-validation."
             return "Cognitive alignment verified. Operational state confirmed."
                 
-        if getattr(AntigravityClient, "_rate_limited", False):
-            logger.info("OpenRouter is currently rate-limited (cached). Activating high-fidelity cognitive fallback immediately.")
+        # Only bypass if there is no API key configured
+        if not self.config.api_key:
+            logger.info("No Antigravity or OpenRouter API key found. Activating high-fidelity cognitive fallback immediately.")
             mock_content = get_mock_completion(prompt)
             data = {
                 "choices": [{
@@ -191,34 +192,24 @@ class AntigravityClient:
                     }
                 )
             
+            # Use the requested model (defaults to openrouter/free for high-fidelity free routing)
+            target_model = model
+            
             # OpenAI / OpenRouter standard chat completions endpoint
             url = f"{self.config.base_url}/chat/completions"
             payload = {
-                "model": model,
+                "model": target_model,
                 "messages": [
                     {"role": "user", "content": prompt}
                 ]
             }
             
-            logger.info(f"Sending completion request to: {url} with model {model}")
+            logger.info(f"Sending completion request to: {url} with model {target_model}")
             async with self._session.post(url, json=payload) as resp:
                 latency = (time.time() - start_time) * 1000
                 if resp.status == 200:
                     data = await resp.json()
                     logger.info(f"OpenRouter response successful in {latency:.2f}ms")
-                    return ResponseObject(success=True, latency_ms=latency, data=data)
-                elif resp.status == 429:
-                    AntigravityClient._rate_limited = True
-                    logger.warning("OpenRouter rate limit (429) hit. Activating high-fidelity cognitive fallback and caching rate-limited status.")
-                    mock_content = get_mock_completion(prompt)
-                    data = {
-                        "choices": [{
-                            "message": {
-                                "role": "assistant",
-                                "content": mock_content
-                            }
-                        }]
-                    }
                     return ResponseObject(success=True, latency_ms=latency, data=data)
                 else:
                     err_msg = await resp.text()

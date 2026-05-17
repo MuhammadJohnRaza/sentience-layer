@@ -7,6 +7,9 @@ export function useTheme() {
   return {
     isDarkMode,
     colors: {
+      background: '#050505',
+      surface: '#0B0B12',
+      border: 'rgba(122, 46, 255, 0.15)',
       backgroundPrimary: '#050505',
       backgroundSecondary: '#0B0B12',
       primaryNeon: '#7A2EFF',
@@ -18,6 +21,12 @@ export function useTheme() {
       success: '#32D74B',
       borderLight: 'rgba(122, 46, 255, 0.15)',
       borderMedium: 'rgba(122, 46, 255, 0.3)',
+    },
+    borderRadius: {
+      sm: 4,
+      md: 8,
+      lg: 12,
+      xl: 16,
     }
   };
 }

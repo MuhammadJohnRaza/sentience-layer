@@ -52,7 +52,7 @@ export function MemoryViewer() {
                 <p className="text-sm">{node.content}</p>{" "}
                 <div className="mt-2 flex gap-1">
                   {" "}
-                  {node.connections.slice(0, 3).map((c) => (
+                  {(node.connections || []).slice(0, 3).map((c) => (
                     <span
                       key={c}
                       className="text-[10px] bg-border/10 px-1.5 py-0.5 rounded dark:bg-border/30"
