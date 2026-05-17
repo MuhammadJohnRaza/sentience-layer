@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/shared/Sidebar";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
-import { SpotChat } from "@/components/chat/SpotChat";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,7 +25,6 @@ export default function RootLayout({
           <div className="flex min-h-screen flex-col bg-background">
             <Sidebar />
             <main className="flex-1 p-6">{children}</main>
-            <SpotChat />
           </div>
         </ErrorBoundary>
       </body>
