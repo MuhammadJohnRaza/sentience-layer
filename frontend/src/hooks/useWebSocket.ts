@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { wsClient } from "@/lib/websocket";
 export function useWebSocket() {
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
   useEffect(() => {
     wsClient.connect();
     const unsubConnect = wsClient.on("system", (payload) => {
