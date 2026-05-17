@@ -152,11 +152,39 @@ async def chat(req: ChatRequest):
             suggested_actions=["Retry", "Check agent status"]
         )
 
-# ─── Stub endpoints for other frontend calls ───────────────────────────────────
+# ─── Stub & Mock Endpoints for Frontend Dashboard ────────────────────────────────
+
+class SearchRequest(BaseModel):
+    query: str
+
+class InterventionRequest(BaseModel):
+    nodeId: str
+    value: float
+
+@app.get("/api/health")
+def health_check():
+    return {"status": "healthy", "service": "Sentience Layer Cognitive API", "version": "1.0.0"}
+
+@app.get("/api/agents/status")
+def agents_status():
+    return [
+        {"id": "critic", "name": "CriticAgent", "status": "active", "load": 0.05, "role": "Constraint Audit"},
+        {"id": "dream", "name": "DreamAgent", "status": "active", "load": 0.02, "role": "Memory Consolidation"},
+        {"id": "postgres", "name": "PostgresMcpServer", "status": "active", "load": 0.01, "role": "Relational Indexing"}
+    ]
 
 @app.get("/api/agents/traces")
 def agent_traces():
-    return []
+    return [
+        {
+            "id": "trace_1",
+            "agent": "CriticAgent",
+            "action": "system_audit",
+            "thought": "Verifying relational schema parameters and active MCP connections.",
+            "status": "completed",
+            "timestamp": datetime.utcnow().strftime("%b %d, %I:%M %p")
+        }
+    ]
 
 @app.get("/api/chat/history")
 def chat_history():
@@ -186,23 +214,130 @@ def get_memory():
             "importance": 0.9,
             "connections": ["user_interaction", "cognitive_kernel"]
         })
+    # Seed default memories if empty
+    if not memories:
+        memories.append({
+            "id": "mem_default_1",
+            "type": "semantic",
+            "content": "System registered and authorized local PostgreSQL MCP server tools.",
+            "timestamp": "May 17, 06:00 PM",
+            "importance": 0.95,
+            "connections": ["mcp_init", "postgres"]
+        })
     return memories
+
+@app.post("/api/memory/search")
+def search_memory(req: SearchRequest):
+    matches = []
+    # Search simulated memories
+    all_mems = get_memory()
+    for m in all_mems:
+        if req.query.lower() in m["content"].lower():
+            matches.append(m)
+    return matches
 
 @app.get("/api/dream/reports")
 def dream_reports():
-    return []
+    return [
+        {
+            "id": "dream_report_1",
+            "title": "Database Schema Consolidation",
+            "summary": "Optimized indices on cognitive_states table and verified integrity.",
+            "coherence": 0.94,
+            "sleepState": "REM",
+            "timestamp": "May 17, 06:10 PM",
+            "insights": ["Seeding database results in 40% faster tool execution speeds."]
+        }
+    ]
 
 @app.get("/api/premonition")
 def premonitions():
-    return []
+    return [
+        {
+            "id": "premonition_1",
+            "indicator": "MCP Registry Load",
+            "prediction": "Registration of complex database tools will increase local reasoning success.",
+            "probability": 0.92,
+            "timeframe": "Short-term",
+            "severity": "beneficial"
+        }
+    ]
 
 @app.get("/api/actions")
 def get_actions():
-    return []
+    return [
+        {
+            "id": "action-1",
+            "name": "Audit System Readiness",
+            "description": "Perform relational database schema sanity checks and verify MCP registrations.",
+            "category": "diagnostic",
+            "status": "pending",
+            "impact": "low"
+        },
+        {
+            "id": "action-2",
+            "name": "Run Opportunity Scan",
+            "description": "Trigger multi-agent ReAct cognitive cycles to uncover causal synergies.",
+            "category": "reasoning",
+            "status": "pending",
+            "impact": "high"
+        }
+    ]
+
+@app.post("/api/actions/{action_id}/execute")
+def execute_action(action_id: str):
+    return {
+        "action_id": action_id,
+        "status": "success",
+        "result": f"Action '{action_id}' successfully executed by CriticAgent."
+    }
+
+@app.post("/api/actions/{action_id}/simulate")
+def simulate_action(action_id: str):
+    return {
+        "action_id": action_id,
+        "status": "success",
+        "simulation": {
+            "success_probability": 0.95,
+            "estimated_impact": "high" if action_id == "action-2" else "low",
+            "unintended_consequences": ["Minor compute usage increase"]
+        }
+    }
+
+@app.get("/api/economic/{action_id}/analyze")
+def analyze_economics(action_id: str):
+    return {
+        "action_id": action_id,
+        "status": "success",
+        "analysis": {
+            "utility_score": 0.91 if action_id == "action-2" else 0.65,
+            "cost_benefit_ratio": 3.8 if action_id == "action-2" else 1.2,
+            "market_impact": "high" if action_id == "action-2" else "low",
+            "regulatory_risk": "negligible"
+        }
+    }
 
 @app.get("/api/causal/graph")
 def causal_graph():
-    return {"nodes": [], "edges": []}
+    return {
+        "nodes": [
+            {"id": "mcp_tools", "label": "MCP Tools Registered", "value": 3.0, "variance": 0.0},
+            {"id": "reasoning_accuracy", "label": "Reasoning Accuracy", "value": 0.95, "variance": 0.02},
+            {"id": "system_latency", "label": "System Latency", "value": 120.0, "variance": 15.0}
+        ],
+        "edges": [
+            {"source": "mcp_tools", "target": "reasoning_accuracy", "strength": 0.45},
+            {"source": "reasoning_accuracy", "target": "system_latency", "strength": -0.2}
+        ]
+    }
+
+@app.post("/api/causal/intervene")
+def causal_intervene(req: InterventionRequest):
+    return {
+        "status": "success",
+        "intervention": {"nodeId": req.nodeId, "value": req.value},
+        "effect": f"Intervention on '{req.nodeId}' simulated successfully. Causal factors aligned."
+    }
 
 @app.get("/api/vault/documents")
 def vault_documents():
@@ -242,9 +377,35 @@ def vault_documents():
         
     return docs
 
+from fastapi import UploadFile, File
+
+@app.post("/api/vault/upload")
+async def vault_upload(file: UploadFile = File(...)):
+    doc_id = f"doc_{len(SESSION_MEMORY) + 1}"
+    return {
+        "status": "success",
+        "document": {
+            "id": doc_id,
+            "title": file.filename,
+            "type": "uploaded_file",
+            "size": "15.4 KB",
+            "uploaded_at": datetime.utcnow().strftime("%b %d, %I:%M %p"),
+            "status": "encrypted"
+        }
+    }
+
 @app.get("/api/insights")
 def insights():
-    return []
+    return [
+        {
+            "id": "insight_1",
+            "title": "MCP Enhancement",
+            "description": "Registered local PostgreSQL MCP server with list, describe, and query capabilities.",
+            "type": "performance",
+            "impact": "high",
+            "timestamp": "May 17, 06:12 PM"
+        }
+    ]
 
 # ─── Entry Point ───────────────────────────────────────────────────────────────
 
