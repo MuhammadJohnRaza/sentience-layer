@@ -322,15 +322,17 @@ def simulate_action(action_id: str):
 
 @app.get("/api/economic/{action_id}/analyze")
 def analyze_economics(action_id: str):
+    roi = 245.0 if action_id == "action-2" else 42.5
+    cost = 1500.0 if action_id == "action-2" else 500.0
+    benefit = 5175.0 if action_id == "action-2" else 712.5
+    npv = benefit - cost
     return {
-        "action_id": action_id,
-        "status": "success",
-        "analysis": {
-            "utility_score": 0.91 if action_id == "action-2" else 0.65,
-            "cost_benefit_ratio": 3.8 if action_id == "action-2" else 1.2,
-            "market_impact": "high" if action_id == "action-2" else "low",
-            "regulatory_risk": "negligible"
-        }
+        "actionId": action_id,
+        "totalCost": cost,
+        "totalBenefit": benefit,
+        "netPresentValue": npv,
+        "roiPercentage": roi,
+        "riskAdjustedReturn": 0.95
     }
 
 @app.get("/api/causal/graph")
