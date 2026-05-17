@@ -33,6 +33,7 @@ export function ChatInterface() {
   // Agent Swarm Selector and Custom System Prompt States
   const [selectedAgent, setSelectedAgent] = useState("critic");
   const [chatSize, setChatSize] = useState<"compact" | "normal" | "immersive">("normal");
+  const [showControls, setShowControls] = useState(true);
   const [isPromptDrawerOpen, setIsPromptDrawerOpen] = useState(false);
   const [customSystemPrompts, setCustomSystemPrompts] = useState<Record<string, string>>({
     critic: "You are the swarm's Critic Agent. Your objective is to thoroughly stress-test every idea, proposal, and document, highlighting architectural blindspots, severe edge cases, and missing failure modes with constructive skepticism.",
@@ -134,71 +135,91 @@ export function ChatInterface() {
             </p>
           </div>
         </div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={clearChat}
-          className="border border-border/20 text-[10px] font-black tracking-widest hover:bg-destructive/20 hover:text-destructive hover:border-destructive/30 transition-all duration-300 py-1"
-        >
-          🧹 CLEAR CHAT
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowControls(!showControls)}
+            className={cn(
+              "border border-border/20 text-[10px] font-black tracking-widest transition-all duration-300 py-1",
+              showControls ? "bg-primary/20 text-primary-foreground border-primary/30" : "text-muted-foreground hover:bg-border/10"
+            )}
+          >
+            {showControls ? "🔒 HIDE SETTINGS" : "⚙️ SHOW SETTINGS"}
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={clearChat}
+            className="border border-border/20 text-[10px] font-black tracking-widest hover:bg-destructive/20 hover:text-destructive hover:border-destructive/30 transition-all duration-300 py-1"
+          >
+            🧹 CLEAR CHAT
+          </Button>
+        </div>
       </div>
 
-      {/* Multi-Datasource Swarm Selector Panel */}
-      <div className="flex flex-wrap gap-2 px-4 py-2.5 border-b border-border/10 bg-card/15 justify-start items-center">
-        <span className="text-[8px] font-black text-muted-foreground/80 tracking-widest uppercase mr-2">Active Datasources:</span>
-        
-        <Badge
-          onClick={() => setVaultActive(!vaultActive)}
-          className={cn(
-            "cursor-pointer text-[8px] font-black tracking-wider py-1 px-2.5 rounded-full border transition-all duration-300 uppercase",
-            vaultActive
-              ? "bg-amber-950/45 border-amber-500/40 text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.2)]"
-              : "bg-background/40 border-border/20 text-muted-foreground/40 hover:bg-background/60"
-          )}
-        >
-          📁 Vault Retriever
-        </Badge>
+      {/* Collapsible Controls Wrapper — datasources + agent swarm selector */}
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-500 ease-in-out",
+          showControls ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        )}
+      >
+        {/* Multi-Datasource Swarm Selector Panel */}
+        <div className="flex flex-wrap gap-2 px-4 py-2.5 border-b border-border/10 bg-card/15 justify-start items-center">
+          <span className="text-[8px] font-black text-muted-foreground/80 tracking-widest uppercase mr-2">Active Datasources:</span>
+          
+          <Badge
+            onClick={() => setVaultActive(!vaultActive)}
+            className={cn(
+              "cursor-pointer text-[8px] font-black tracking-wider py-1 px-2.5 rounded-full border transition-all duration-300 uppercase",
+              vaultActive
+                ? "bg-amber-950/45 border-amber-500/40 text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.2)]"
+                : "bg-background/40 border-border/20 text-muted-foreground/40 hover:bg-background/60"
+            )}
+          >
+            📁 Vault Retriever
+          </Badge>
 
-        <Badge
-          onClick={() => setPostgresActive(!postgresActive)}
-          className={cn(
-            "cursor-pointer text-[8px] font-black tracking-wider py-1 px-2.5 rounded-full border transition-all duration-300 uppercase",
-            postgresActive
-              ? "bg-emerald-950/45 border-emerald-500/40 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.2)]"
-              : "bg-background/40 border-border/20 text-muted-foreground/40 hover:bg-background/60"
-          )}
-        >
-          🗄️ PostgreSQL MCP
-        </Badge>
+          <Badge
+            onClick={() => setPostgresActive(!postgresActive)}
+            className={cn(
+              "cursor-pointer text-[8px] font-black tracking-wider py-1 px-2.5 rounded-full border transition-all duration-300 uppercase",
+              postgresActive
+                ? "bg-emerald-950/45 border-emerald-500/40 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.2)]"
+                : "bg-background/40 border-border/20 text-muted-foreground/40 hover:bg-background/60"
+            )}
+          >
+            🗄️ PostgreSQL MCP
+          </Badge>
 
-        <Badge
-          onClick={() => setCausalActive(!causalActive)}
-          className={cn(
-            "cursor-pointer text-[8px] font-black tracking-wider py-1 px-2.5 rounded-full border transition-all duration-300 uppercase",
-            causalActive
-              ? "bg-purple-950/45 border-purple-500/40 text-purple-300 shadow-[0_0_8px_rgba(168,85,247,0.25)]"
-              : "bg-background/40 border-border/20 text-muted-foreground/40 hover:bg-background/60"
-          )}
-        >
-          🌐 Causal Explorer
-        </Badge>
+          <Badge
+            onClick={() => setCausalActive(!causalActive)}
+            className={cn(
+              "cursor-pointer text-[8px] font-black tracking-wider py-1 px-2.5 rounded-full border transition-all duration-300 uppercase",
+              causalActive
+                ? "bg-purple-950/45 border-purple-500/40 text-purple-300 shadow-[0_0_8px_rgba(168,85,247,0.25)]"
+                : "bg-background/40 border-border/20 text-muted-foreground/40 hover:bg-background/60"
+            )}
+          >
+            🌐 Causal Explorer
+          </Badge>
 
-        <Badge
-          onClick={() => setSwarmActive(!swarmActive)}
-          className={cn(
-            "cursor-pointer text-[8px] font-black tracking-wider py-1 px-2.5 rounded-full border transition-all duration-300 uppercase",
-            swarmActive
-              ? "bg-indigo-950/45 border-indigo-500/40 text-indigo-300 shadow-[0_0_8px_rgba(99,102,241,0.25)]"
-              : "bg-background/40 border-border/20 text-muted-foreground/40 hover:bg-background/60"
-          )}
-        >
-          👾 Swarm Loggers
-        </Badge>
-      </div>
+          <Badge
+            onClick={() => setSwarmActive(!swarmActive)}
+            className={cn(
+              "cursor-pointer text-[8px] font-black tracking-wider py-1 px-2.5 rounded-full border transition-all duration-300 uppercase",
+              swarmActive
+                ? "bg-indigo-950/45 border-indigo-500/40 text-indigo-300 shadow-[0_0_8px_rgba(99,102,241,0.25)]"
+                : "bg-background/40 border-border/20 text-muted-foreground/40 hover:bg-background/60"
+            )}
+          >
+            👾 Swarm Loggers
+          </Badge>
+        </div>
 
-      {/* Agent swarm custom prompt controller */}
-      <div className="border-b border-border/15 bg-background/40 p-4 space-y-3.5">
+        {/* Agent swarm custom prompt controller */}
+        <div className="border-b border-border/15 bg-background/40 p-4 space-y-3.5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
@@ -314,7 +335,8 @@ export function ChatInterface() {
             />
           </div>
         )}
-      </div>
+        </div> {/* end agent swarm controller */}
+      </div> {/* end collapsible wrapper */}
 
       {/* Messages Viewport */}
       <ScrollArea className="flex-1 p-4 bg-background/25">
