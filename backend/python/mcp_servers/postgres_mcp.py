@@ -82,6 +82,42 @@ class PostgresMcp:
                 )
             """)
 
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS economic_simulations (
+                    simulation_id TEXT PRIMARY KEY,
+                    intervention_name TEXT,
+                    target_cohort TEXT,
+                    projected_conversion_boost_pct REAL,
+                    estimated_roi_yield_pct REAL,
+                    stabilization_window_days INTEGER,
+                    status TEXT,
+                    executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS memory_nodes (
+                    node_id TEXT PRIMARY KEY,
+                    node_type TEXT,
+                    label TEXT,
+                    weight REAL,
+                    connected_edges_count INTEGER,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS dream_consolidation_runs (
+                    run_id TEXT PRIMARY KEY,
+                    vector_chunks_merged INTEGER,
+                    alignment_accuracy_pct REAL,
+                    file_compression_pct REAL,
+                    fragmentation_index_before REAL,
+                    fragmentation_index_after REAL,
+                    executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
             # Seed telemetry records (cognitive_states)
             cursor.execute("INSERT OR REPLACE INTO cognitive_states VALUES ('state_1', 'CriticAgent', 'readiness', 'operational', 0.98, '2026-05-17 18:00:00')")
             cursor.execute("INSERT OR REPLACE INTO cognitive_states VALUES ('state_2', 'DreamAgent', 'dreamscape_mode', 'consolidation', 0.92, '2026-05-17 18:05:00')")
@@ -112,10 +148,25 @@ class PostgresMcp:
             cursor.execute("INSERT OR REPLACE INTO cognitive_agent_registry VALUES ('agent_04', 'OpportunityAnalystAgent', 'Optimization vector detection', 'ACTIVE', 0.95, '2026-05-17 22:10:00')")
             cursor.execute("INSERT OR REPLACE INTO cognitive_agent_registry VALUES ('agent_05', 'DreamAgent', 'Neural dream consolidator and file merger', 'NOMINAL', 0.89, '2026-05-17 21:00:00')")
             cursor.execute("INSERT OR REPLACE INTO cognitive_agent_registry VALUES ('agent_06', 'DoubtAgent', 'Quarantine controller and sandbox monitor', 'NOMINAL', 0.91, '2026-05-17 21:45:00')")
+
+            # Seed telemetry records (economic_simulations)
+            cursor.execute("INSERT OR REPLACE INTO economic_simulations VALUES ('sim_01', 'Postgres Table Caching', 'High-Abandonment Checkout Users', 8.4, 245.0, 14, 'COMPLETED', '2026-05-17 22:15:00')")
+            cursor.execute("INSERT OR REPLACE INTO economic_simulations VALUES ('sim_02', 'Targeted CRM Recover Code', 'Incentivized Cart Leavers', 12.5, 184.5, 7, 'COMPLETED', '2026-05-17 22:10:00')")
+            cursor.execute("INSERT OR REPLACE INTO economic_simulations VALUES ('sim_03', 'SQLite Index Defragmentation', 'Database System Kernels', 0.0, 85.0, 1, 'PENDING', '2026-05-17 22:00:00')")
+
+            # Seed telemetry records (memory_nodes)
+            cursor.execute("INSERT OR REPLACE INTO memory_nodes VALUES ('mem_chat_1', 'chat_session', 'Sales Drop Mitigation Chat', 0.95, 3, '2026-05-17 22:15:00')")
+            cursor.execute("INSERT OR REPLACE INTO memory_nodes VALUES ('mem_vault_1', 'vault_doc', 'Diagnostics Report', 0.85, 2, '2026-05-17 18:00:00')")
+            cursor.execute("INSERT OR REPLACE INTO memory_nodes VALUES ('mem_sandbox_1', 'sandbox_room', 'Doubt Room Thread Quarantine', 0.90, 4, '2026-05-17 21:45:00')")
+            cursor.execute("INSERT OR REPLACE INTO memory_nodes VALUES ('mem_mcp_1', 'mcp_index', 'Postgres MCP Tables Directory', 0.98, 5, '2026-05-17 17:30:00')")
+
+            # Seed telemetry records (dream_consolidation_runs)
+            cursor.execute("INSERT OR REPLACE INTO dream_consolidation_runs VALUES ('run_01', 12, 92.4, 34.5, 26.4, 7.9, '2026-05-17 21:00:00')")
+            cursor.execute("INSERT OR REPLACE INTO dream_consolidation_runs VALUES ('run_02', 8, 95.1, 28.2, 14.8, 4.1, '2026-05-17 16:30:00')")
             
             self.conn.commit()
             self.is_initialized = True
-            logger.info("Local PostgreSQL MCP database successfully initialized and seeded with robust real-world scenario datasets.")
+            logger.info("Local PostgreSQL MCP database successfully initialized and seeded with rich, healthy real-world scenario datasets.")
             return True
         except Exception as e:
             logger.error(f"Failed to initialize local PostgreSQL MCP: {e}")
@@ -178,7 +229,7 @@ class PostgresMcp:
             elif name == "postgres_describe_table":
                 table_name = arguments.get("table_name")
                 # Whitelist table names to safeguard schema querying
-                if table_name not in ["cognitive_states", "vault_metadata", "checkout_metrics", "system_incidents", "cognitive_agent_registry"]:
+                if table_name not in ["cognitive_states", "vault_metadata", "checkout_metrics", "system_incidents", "cognitive_agent_registry", "economic_simulations", "memory_nodes", "dream_consolidation_runs"]:
                     return {"status": "error", "error": f"Table '{table_name}' not found."}
                 
                 cursor.execute(f"PRAGMA table_info({table_name})")
