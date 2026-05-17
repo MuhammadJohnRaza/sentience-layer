@@ -26,8 +26,12 @@ from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime
 
-from backend.python.antigravity_client import AntigravityClient, get_antigravity_client
-from backend.python.mcp.client import MCPClient, get_mcp_registry
+try:
+    from backend.python.antigravity_client import AntigravityClient, get_antigravity_client
+    from backend.python.mcp.client import MCPClient, get_mcp_registry
+except ModuleNotFoundError:
+    from antigravity_client import AntigravityClient, get_antigravity_client  # type: ignore
+    from mcp.client import MCPClient, get_mcp_registry  # type: ignore
 
 logger = logging.getLogger(__name__)
 

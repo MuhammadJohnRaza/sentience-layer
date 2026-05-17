@@ -1,1 +1,0 @@
-export function InsightCard({ insight }: { insight: any }) { return <div className="p-4 border rounded-lg bg-blue-50 text-blue-900"><strong>Insight:</strong> {insight?.title || 'No Title'} <p>{insight?.description}</p></div>; }
