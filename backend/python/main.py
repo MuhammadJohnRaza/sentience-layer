@@ -100,8 +100,24 @@ async def chat(req: ChatRequest):
     agent = CriticAgent(config={})
     agent.max_reasoning_steps = 2
 
+    # Parse and feed all uploaded vault document content as multimodal RAG context
+    doc_contexts = []
+    for doc in UPLOADED_DOCUMENTS:
+        if "content" in doc and doc["content"] and doc["content"].strip():
+            doc_contexts.append(f"--- DOCUMENT: {doc['name']} ---\n{doc['content']}\n")
+
+    full_prompt = req.message
+    if doc_contexts:
+        full_prompt = (
+            "The user has uploaded the following files to the Memory Vault. "
+            "Please analyze their content and answer the user query based on this context:\n\n"
+            + "\n".join(doc_contexts)
+            + "\n\nUser Query: "
+            + req.message
+        )
+
     try:
-        result = await agent.reason_and_act(req.message)
+        result = await agent.reason_and_act(full_prompt)
 
         # Build the response text from the reasoning chain
         thoughts = []
@@ -409,6 +425,30 @@ async def vault_upload(file: UploadFile = File(...)):
     content = await file.read()
     size_str = f"{len(content)} bytes" if len(content) < 1024 else f"{len(content)/1024:.1f} KB"
     
+    import io
+    extracted_text = ""
+    filename_lower = file.filename.lower()
+    
+    if filename_lower.endswith(".pdf"):
+        try:
+            from pypdf import PdfReader
+            reader = PdfReader(io.BytesIO(content))
+            for page in reader.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    extracted_text += page_text + "\n"
+            if not extracted_text.strip():
+                extracted_text = "Empty or scanned PDF document."
+        except Exception as e:
+            extracted_text = f"Failed to extract PDF text: {str(e)}"
+    elif filename_lower.endswith((".txt", ".json", ".csv", ".tsv")):
+        try:
+            extracted_text = content.decode("utf-8", errors="ignore")
+        except Exception as e:
+            extracted_text = f"Failed to parse text file: {str(e)}"
+    else:
+        extracted_text = "Unsupported binary formatting or media trace."
+    
     doc = {
         "id": f"uploaded_{len(UPLOADED_DOCUMENTS) + 1}",
         "name": file.filename,
@@ -417,9 +457,11 @@ async def vault_upload(file: UploadFile = File(...)):
         "size": size_str,
         "uploaded_at": datetime.utcnow().strftime("%b %d, %I:%M %p"),
         "status": "encrypted",
+        "content": extracted_text,
         "metadata": {
             "description": "Trace document persisted directly from Cognitive Chat Link.",
-            "storage_mode": "Memory Vault Persistence"
+            "storage_mode": "Memory Vault Persistence",
+            "extracted_length": len(extracted_text)
         }
     }
     UPLOADED_DOCUMENTS.append(doc)
