@@ -26,7 +26,7 @@ export function MessageBubble({ message }: { message: Message }) {
   const [isLoved,      setIsLoved]      = useState(false);
   const [isSaving,     setIsSaving]     = useState(false);
   const [chainOpen,    setChainOpen]    = useState(false);
-  const [evidenceOpen, setEvidenceOpen] = useState(false);
+  const [evidenceOpen, setEvidenceOpen] = useState(true);
   const [actionsOpen,  setActionsOpen]  = useState(true);
 
   const addNotification = useStore((state) => state.addNotification);
