@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+pydantic
+onnxruntime
+numpy
+sentence-transformers
+transformers
+torch
+librosa
+soundfile
+aiohttp
+pydantic-settings
