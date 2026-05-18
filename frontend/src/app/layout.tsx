@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import "@/lib/firebase";
 import { Sidebar } from "@/components/shared/Sidebar";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
