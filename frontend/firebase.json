@@ -1,0 +1,17 @@
+{
+  "hosting": {
+    "site": "sentenceproject-496712-26ab3",
+    "public": "out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
