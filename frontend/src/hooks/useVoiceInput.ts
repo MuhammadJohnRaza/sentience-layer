@@ -3,6 +3,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 export function useVoiceInput() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
+  const [isSupported, setIsSupported] = useState(false);
   const recognitionRef = useRef<any>(null);
   useEffect(() => {
     if (typeof window !== "undefined" && "webkitSpeechRecognition" in window) {
@@ -21,13 +22,27 @@ export function useVoiceInput() {
       };
       recognitionRef.current.onend = () => setIsListening(false);
       recognitionRef.current.onerror = () => setIsListening(false);
+      setIsSupported(true);
     }
   }, []);
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     if (recognitionRef.current) {
       setTranscript("");
       setIsListening(true);
-      recognitionRef.current.start();
+      try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach((track) => track.stop());
+        }
+      } catch (err) {
+        console.warn("[Voice Input] Microphone permission denied:", err);
+      }
+      try {
+        recognitionRef.current.start();
+      } catch (e) {
+        console.error("[Voice Input] Speech recognition start error:", e);
+        setIsListening(false);
+      }
     }
   }, []);
   const stopListening = useCallback(() => {
@@ -43,6 +58,6 @@ export function useVoiceInput() {
     startListening,
     stopListening,
     resetTranscript,
-    isSupported: !!recognitionRef.current,
+    isSupported,
   };
 }
