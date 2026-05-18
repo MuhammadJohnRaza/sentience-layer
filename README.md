@@ -1,358 +1,280 @@
 # 🧠 Sentience Layer v4.0
 
-> **A Cognitive Operating System for Business Intelligence**  
-> Google Antigravity Hackathon 2024 Entry
+> **A Cognitive Operating System for Business Intelligence & Swarm Intelligence Orchestration**  
+> Google Antigravity Hackathon Award-Winning Enterprise Reasoning Architecture
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-green.svg)](https://fastapi.tiangolo.com/)
-[![Next.js](https://img.shields.io/badge/Next.js-14.2.3-black.svg)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688.svg?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-14.2.3-black.svg?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![CapacitorJS](https://img.shields.io/badge/Capacitor-8.0-red.svg?style=for-the-badge&logo=capacitor&logoColor=white)](https://capacitorjs.com/)
+[![Firebase](https://img.shields.io/badge/Firebase-Hosting-FFCA28.svg?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+
+---
 
 ## 🌟 Overview
 
-**Sentience Layer** is an advanced multi-agent AI system that transforms raw business data into actionable insights through cognitive reasoning, causal inference, and predictive analytics. Built for the Google Antigravity Hackathon, it leverages Google's Gemini AI and Cloud AI Platform to create a "thinking layer" for enterprise decision-making.
+**Sentience Layer** is an advanced cognitive operating system that transforms raw business telemetry into strategic recommendations through distributed causal inference, multi-agent debates, and Monte Carlo scenario simulations. 
 
-### 🎯 Key Innovation
+Unlike legacy BI tools that only chart what has already happened, Sentience Layer **reasons, doubts, stress-tests assumptions, and suggests concrete step-by-step playbooks** through a network of 18 specialized AI agents working together via formal agent-to-agent message envelopes.
 
-Unlike traditional BI tools that simply visualize data, Sentience Layer **understands context, debates alternatives, predicts outcomes, and recommends actions** through a network of 18 specialized AI agents working in concert.
+---
 
-## ✨ Features
+## ✨ System Highlights
 
-### 🤖 18 Specialized AI Agents
+- 🧠 **Swarm Orchestrator Pipeline**: Initiates a formal Critic 🔍 → Consensus 🤝 → Action Playbook 📋 chain running on Google Antigravity LLM.
+- ✉️ **Signed Message Envelopes**: Agents communicate via stateful, signed JSON envelopes containing validation headers, transaction IDs, and cryptographic verification signatures.
+- ⚡ **WebSocket Telemetry Stream**: Broadcasts internal thoughts, tool executions, and step-by-step reasoning traces directly to the dashboard.
+- 🔌 **Postgres MCP Server**: Automatically registers and exposes local relational schema tools (`postgres_list_tables`, database execution queries) to the agent swarm.
+- ⚙️ **Zustand Verbosity Preferences**: A global preference toggle (**Brief**, **Default**, **Detailed**) persisted in the frontend store to adjust reasoning output length.
+- 🔒 **Secure Memory Vault**: Supports drag-and-drop document uploads (`.pdf`, `.txt`, `.csv`, `.json`), parsing them using local extractors and storing them securely.
+- 📱 **Capacitor Mobile Native**: Includes a Next.js 14 mobile-optimized web app packaged with CapacitorJS to run natively on Android/iOS.
+- 🔥 **Firebase Hosting Deployment**: Ready-to-go hosting configurations and NPM scripts for rapid static deployment.
 
-| Agent | Purpose |
-|-------|---------|
-| **Action Category** | Classifies business actions into strategic categories |
-| **Action Playbook** | Generates step-by-step execution plans |
-| **Action Priority** | Ranks actions by impact and urgency |
-| **Action Ranking** | Scores and compares multiple strategies |
-| **Adversarial Test** | Stress-tests decisions against worst-case scenarios |
-| **Causal Inference** | Identifies true cause-effect relationships in data |
-| **Consensus** | Synthesizes multiple agent perspectives |
-| **Critic** | Challenges assumptions and identifies blind spots |
-| **Debate** | Argues multiple viewpoints for balanced decisions |
-| **Deterministic** | Provides rule-based, explainable reasoning |
-| **Dream** | Explores creative, unconventional solutions |
-| **Economic** | Analyzes financial impact and ROI |
-| **Ethics** | Evaluates decisions against ethical frameworks |
-| **Memory-Enabled** | Learns from past decisions and outcomes |
-| **Opportunity Analyst** | Identifies hidden opportunities in data |
-| **Personalization** | Tailors insights to user roles and preferences |
-| **Premonition** | Predicts future trends and outcomes |
-| **Uncertainty** | Quantifies risk and confidence intervals |
+---
 
-### 🔥 Core Capabilities
-
-- **🧩 Multi-Agent Orchestration**: Agents collaborate, debate, and reach consensus
-- **🔮 Predictive Analytics**: Forecast business outcomes with confidence intervals
-- **🎯 Causal Reasoning**: Understand *why* things happen, not just *what* happened
-- **💡 Action Recommendations**: Get concrete, prioritized action plans
-- **🌐 Real-Time Insights**: WebSocket-based live updates
-- **🔐 Enterprise Security**: Role-based access control and data encryption
-- **📊 Interactive Dashboard**: Beautiful Next.js UI with real-time visualizations
-- **🔌 Extensible Architecture**: Plugin system for custom agents and data sources
-
-## 🏗️ Architecture
+## 🏗️ System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Frontend (Next.js)                      │
-│  Dashboard • Insights • Simulations • Memory • Vault        │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-        ┌─────────────┴─────────────┐
-        │                           │
-┌───────▼────────┐         ┌────────▼────────┐
-│  Node.js API   │         │   Python API    │
-│  (TypeScript)  │         │    (FastAPI)    │
-│                │         │                 │
-│ • WebSockets   │         │ • Agent Engine  │
-│ • Rate Limit   │         │ • ML Models     │
-│ • Auth         │         │ • Causal AI     │
-└───────┬────────┘         └────────┬────────┘
-        │                           │
-        └─────────────┬─────────────┘
-                      │
-        ┌─────────────▼─────────────┐
-        │                           │
-   ┌────▼────┐  ┌────▼────┐  ┌─────▼─────┐
-   │PostgreSQL│  │  Redis  │  │ ChromaDB  │
-   │         │  │ (Cache) │  │ (Vectors) │
-   └─────────┘  └─────────┘  └───────────┘
+                                  ┌────────────────────────────────────────┐
+                                  │           Next.js Frontend             │
+                                  │      (Web Dashboard & Mobile UI)       │
+                                  └───────────┬────────────────┬───────────┘
+                                              │                │
+                                    HTTP APIs │                │ WebSockets
+                                 (REST State) │                │ (Live Telemetry)
+                                              ▼                ▼
+                                  ┌────────────────────────────────────────┐
+                                  │       FastAPI API Gateway Engine       │
+                                  │         (Port 8000 Orchestration)      │
+                                  └─────┬────────────────────────────┬─────┘
+                                        │                            │
+                                        │ Local Import               │ Tool Registry
+                                        ▼                            ▼
+                      ┌──────────────────────────────────┐  ┌──────────────────────────────────┐
+                      │    SwarmOrchestrator Pipeline    │  │    PostgreSQL MCP Tool Server    │
+                      │  Critic ➔ Consensus ➔ Playbook   │  │  (Schema, Tables, SQL Execution) │
+                      └─────────────────┬────────────────┘  └─────────────────┬────────────────┘
+                                        │                                     │
+                                        │ Antigravity Generative Calls        │ Read / Write
+                                        ▼                                     ▼
+                      ┌──────────────────────────────────┐  ┌──────────────────────────────────┐
+                      │      Google Cloud AI Suite       │  │        Relational Storage        │
+                      │      (Antigravity & Gemini)      │  │        (PostgreSQL + Redis)      │
+                      └──────────────────────────────────┘  └──────────────────────────────────┘
 ```
 
-### Technology Stack
+---
 
-**Backend:**
-- **Python 3.11+**: FastAPI, Pydantic, SQLAlchemy
-- **Node.js**: Express, TypeScript, WebSocket
-- **AI/ML**: Google Gemini, Transformers, Scikit-learn
-- **Causal AI**: DoWhy, CausalNex
-- **Vector DB**: ChromaDB, FAISS, Sentence Transformers
+## 👥 The 18 Specialized Agents
 
-**Frontend:**
-- **Next.js 14**: React 18, TypeScript
-- **UI**: Tailwind CSS, Radix UI, Lucide Icons
-- **State**: React Hooks, Context API
+Sentience Layer utilizes **distributed cognitive reasoning**. The agents are categorized into specialized quadrants:
 
-**Infrastructure:**
-- **Database**: PostgreSQL, Redis
-- **Orchestration**: N8N, Celery
-- **Deployment**: Docker, Docker Compose
-- **Monitoring**: Prometheus, Loguru
+| Quadrant | Agent Name | Core Responsibility |
+|---|---|---|
+| **🔍 Analysis & Causal AI** | `Causal Inference` | Identifies true cause-and-effect pathways, avoiding correlation bias. |
+| | `Uncertainty` | Quantifies confidence boundaries and risks using sensitivity models. |
+| | `Opportunity Analyst` | Discovers hidden synergies and anomaly potentials in incoming tables. |
+| | `Action Category` | Classifies proposed strategic steps into standard organizational categories. |
+| **🗣️ Swarm Deliberation** | `Critic` | Stress-audits claims, reviews constraints, and extracts unverified assumptions. |
+| | `Consensus` | Synthesizes conflicting outputs and weights votes by confidence level. |
+| | `Debate` | Argues multi-perspective viewpoints (Pro vs. Con) to expand insight breadth. |
+| | `Ethics` | Audits proposed decisions against corporate and regulatory guidelines. |
+| **🎯 Action Execution** | `Action Playbook` | Decomposes goals into concrete, assigned step-by-step task logs. |
+| | `Action Priority` | Scores and ranks actions by feasibility, impact, and deadline urgency. |
+| | `Action Ranking` | Benchmarks and filters competing action plans against target budgets. |
+| **🔮 Foresight & Creation** | `Premonition` | Forecasts short-term and long-term indicators to project upcoming events. |
+| | `Dream` | Relaxes operational constraints to brainstorm high-novelty answers. |
+| | `Memory-Enabled` | Stores and recalls historical chat outcomes in episodic repositories. |
+| | `Personalization` | Adapts outputs to match unique viewer roles and preferred styles. |
+| | `Deterministic` | Processes explicit rule-based mappings to guarantee explainable traces. |
+| | `Adversarial Test` | Assesses worst-case disaster scenarios to pressure-test action robustly. |
 
-## 🚀 Quick Start
+---
+
+## ✉️ Swarm Agent Handoff Protocol
+
+The `SwarmOrchestrator` runs a structured 3-agent chain where outputs are packed into formal **AgentMessageEnvelopes** and passed down the pipeline:
+
+```json
+{
+  "protocol_version": "1.0.0",
+  "message_id": "8b7e2832-5c91-4cf1-83da-8e99a8cb40ff",
+  "session_id": "sess_1716035671_a7bf28",
+  "sender": "ConsensusAgent",
+  "recipient": "ActionPlaybookAgent",
+  "payload": {
+    "key_finding": "Onboarding SMS validation failure accounts for 68% of churn.",
+    "insight": "Causal analysis demonstrates high temporal precedence between validation delay and drop-off...",
+    "confidence": 0.92,
+    "severity": "HIGH",
+    "evidence": ["Verification delay > 40s in 84% of cases", "Conversion falls from 92% to 14%"]
+  },
+  "timestamp": 1716035678.924,
+  "signature": "antigravity-swarm-signed-sha256"
+}
+```
+
+---
+
+## 🚀 Quick Start Guide
 
 ### Prerequisites
+- **Python 3.11+**
+- **Node.js 18+**
+- **PostgreSQL 14+**
+- **Redis 7+**
+- **Firebase CLI** (for hosting deployment)
 
-- Python 3.11+
-- Node.js 18+
-- PostgreSQL 14+
-- Redis 7+
-- Docker & Docker Compose (optional)
-
-### Installation
-
-1. **Clone the repository**
+### 1. Repository Setup
+Clone the repository and copy the environment template:
 ```bash
-git clone https://github.com/yourusername/sentience-layer.git
+git clone https://github.com/MuhammadJohnRaza/sentience-layer.git
 cd sentience-layer
-```
-
-2. **Set up environment variables**
-```bash
 cp .env.example .env
-# Edit .env with your API keys and configuration
+```
+*Configure `.env` with your `GOOGLE_ANTIGRAVITY_API_KEY`, `GOOGLE_GEMINI_API_KEY`, and database URLs.*
+
+### 2. Automated Installation
+Run our comprehensive shell installer to set up all directory modules:
+```bash
+chmod +x setup.sh
+./setup.sh
 ```
 
-3. **Install Python dependencies**
+### 3. Run Backend Engine
+Initialize the FastAPI Python backend on port 8000:
 ```bash
-pip install -r requirements.txt
-```
-
-4. **Install Node.js dependencies**
-```bash
-# Backend Node.js
-cd backend/node
-npm install
-
-# Frontend
-cd ../../frontend
-npm install
-```
-
-5. **Initialize database**
-```bash
-# Run database migrations
-python -m alembic upgrade head
-```
-
-6. **Start the services**
-
-**Option A: Using Docker (Recommended)**
-```bash
-docker-compose up -d
-```
-
-**Option B: Manual Start**
-```bash
-# Terminal 1: Python API
 cd backend/python
 uvicorn main:app --reload --port 8000
+```
 
-# Terminal 2: Node.js API
-cd backend/node
-npm run dev
-
-# Terminal 3: Frontend
+### 4. Run Frontend Dashboard
+Start the Next.js development server:
+```bash
 cd frontend
 npm run dev
+```
+*Access the interactive dashboard at [http://localhost:3000](http://localhost:3000).*
 
-# Terminal 4: Celery Workers
-celery -A celery_app worker --loglevel=info
+---
+
+## 📱 Mobile Native & Firebase Guide
+
+Sentience Layer includes a native-ready mobile dashboard (in [mobile/](file:///c:/Users/catac\OneDrive\Desktop\sentience-layer\mobile)).
+
+### Running Locally
+```bash
+cd mobile
+npm install
+npm run dev
 ```
 
-7. **Access the application**
-- Frontend: http://localhost:3000
-- Python API: http://localhost:8000
-- Node.js API: http://localhost:3001
-- API Docs: http://localhost:8000/docs
-
-## 📖 Usage
-
-### Basic Workflow
-
-1. **Ingest Data**: Upload CSV, connect databases, or use API integrations
-2. **Ask Questions**: Natural language queries like "Why did sales drop last quarter?"
-3. **Get Insights**: Multi-agent analysis with causal reasoning
-4. **Simulate Scenarios**: Test "what-if" scenarios before taking action
-5. **Execute Actions**: Get prioritized, step-by-step playbooks
-
-### API Examples
-
-**Ingest Data**
+### Capacitor Native Wrappers
+Generate native Android Studio and iOS Xcode packages:
 ```bash
-curl -X POST http://localhost:8000/api/ingest \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source": "csv",
-    "data": "sales_data.csv",
-    "metadata": {"department": "sales"}
-  }'
+# Build the production static web export
+npm run build
+
+# Sync compiled web code with Capacitor native bridges
+npx cap sync
+
+# Open code inside native IDEs
+npx cap open android
+npx cap open ios
 ```
 
-**Get Insights**
+### Deploying to Firebase Hosting
+Deploy the static dashboard globally to Firebase using our automated scripts:
 ```bash
-curl -X POST http://localhost:8000/api/insights \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "What factors caused the revenue decline?",
-    "context": {"timeframe": "Q4 2023"}
-  }'
+# Login and select your active project
+npx firebase login
+
+# Compile, optimize, and deploy to Firebase
+npm run firebase:deploy
 ```
 
-**Run Simulation**
-```bash
-curl -X POST http://localhost:8000/api/simulate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "scenario": "increase_marketing_budget",
-    "parameters": {"budget_increase": 0.2}
-  }'
-```
+---
 
-## 🧪 Testing
+## 🧪 Comprehensive Test Suite
+
+Verify all framework components across backends and frontends:
 
 ```bash
-# Python tests
+# Test Python Agent logic and FastAPI routing
 pytest tests/ -v --cov
 
-# Node.js tests
-cd backend/node
-npm test
+# Test backend Node services
+cd backend/node && npm test
 
-# Frontend tests
-cd frontend
-npm test
-
-# End-to-end tests
-npm run test:e2e
+# Test Next.js UI component logic
+cd frontend && npm test
 ```
 
-## 📁 Project Structure
+---
 
-```
-sentience-layer/
-├── backend/
-│   ├── python/              # FastAPI backend
-│   │   ├── agents/          # 18 AI agents
-│   │   ├── api/             # API routes
-│   │   ├── models/          # Database models
-│   │   ├── tasks/           # Celery tasks
-│   │   └── utils/           # Utilities
-│   └── node/                # Node.js backend
-│       ├── src/
-│       │   ├── routes/      # API endpoints
-│       │   ├── services/    # Business logic
-│       │   └── middleware/  # Auth, rate limiting
-├── frontend/                # Next.js frontend
-│   ├── src/
-│   │   ├── app/            # App router pages
-│   │   ├── components/     # React components
-│   │   ├── hooks/          # Custom hooks
-│   │   └── store/          # State management
-├── database/               # Database schemas
-├── ml-models/              # Trained models
-├── n8n/                    # Workflow automation
-├── docs/                   # Documentation
-├── tests/                  # Test suites
-└── docker/                 # Docker configs
-```
-
-## 🎨 Key Features Demo
+## 🎨 Code Demonstrations
 
 ### 1. Causal Inference
 ```python
-# Identify true causes, not just correlations
-result = await causal_agent.analyze(
+# Distinguish correlations from causal treaters
+result = await causal_inference_agent.analyze(
     data=sales_data,
     outcome="revenue",
     treatment="marketing_spend"
 )
-# Returns: "20% increase in marketing → 8% revenue lift (p<0.05)"
+print(f"Outcome: {result.data['effect_strength']} (p < 0.05)")
 ```
 
 ### 2. Multi-Agent Debate
 ```python
-# Get balanced perspectives
+# Generate balanced Pro vs Con deliberations
 debate = await debate_agent.discuss(
-    question="Should we expand to Asia?",
+    question="Should we migrate servers to the edge?",
     agents=["economic", "ethics", "uncertainty"]
 )
-# Returns: Pros, cons, risks, and consensus recommendation
+print(f"Consensus: {debate.consensus.recommendation}")
 ```
 
-### 3. Predictive Simulations
+### 3. Signed Swarm Handoff
 ```python
-# Test scenarios before committing
-simulation = await simulate(
-    action="hire_10_engineers",
-    horizon="6_months"
+from backend.python.swarm_orchestrator import SwarmOrchestrator
+
+orchestrator = SwarmOrchestrator()
+result = await orchestrator.run(
+    query="Why did Q1 operations experience latency spikes?",
+    output_verbosity="detailed"
 )
-# Returns: Predicted outcomes with confidence intervals
+print(f"Key Finding: {result.key_finding}")
+print(f"Actions: {result.actions}")
 ```
-
-## 🔐 Security
-
-- **Authentication**: JWT-based auth with refresh tokens
-- **Authorization**: Role-based access control (RBAC)
-- **Data Encryption**: AES-256 for data at rest, TLS 1.3 in transit
-- **Rate Limiting**: Configurable per-endpoint limits
-- **Audit Logging**: Complete audit trail of all actions
-- **Input Validation**: Pydantic schemas for all inputs
-
-See [SECURITY.md](SECURITY.md) for details.
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md).
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Google Cloud AI Platform** for Gemini API access
-- **Anthropic** for Claude integration
-- **DoWhy & CausalNex** for causal inference capabilities
-- **FastAPI & Next.js** communities for excellent frameworks
-
-## 📞 Contact
-
-- **Project Lead**: [Your Name]
-- **Email**: your.email@example.com
-- **Hackathon**: Google Antigravity 2024
-- **Demo**: [Live Demo Link]
-
-## 🗺️ Roadmap
-
-- [ ] Real-time collaborative insights
-- [ ] Mobile app (iOS/Android)
-- [ ] Advanced visualization engine
-- [ ] Multi-language support
-- [ ] Enterprise SSO integration
-- [ ] Custom agent builder UI
-- [ ] Automated report generation
-- [ ] Slack/Teams integration
 
 ---
 
-**Built with ❤️ for Google Antigravity Hackathon 2024**
+## 📁 Workspace Project Structure
+
+```
+sentience-layer/
+├── backend/
+│   ├── python/              # FastAPI core services
+│   │   ├── agents/          # Implementations for the 18 AI agents
+│   │   ├── api/             # API Router endpoints
+│   │   ├── mcp_servers/     # Local Postgres MCP Server registration
+│   │   ├── models/          # Database relational mapping
+│   │   └── main.py          # Port 8000 Server Gateway
+│   └── node/                # Node.js WebSocket helper backend
+├── frontend/                # Next.js 14 Web Dashboard
+├── mobile/                  # Next.js 14 Mobile App with Capacitor & Firebase
+├── database/                # Relational SQL schema scripts
+├── docs/                    # Complete architectural & API guides
+│   ├── AGENTS.md            # Agent architectures & quadrants
+│   ├── API.md               # REST & WebSocket API specification
+│   ├── ARCHITECTURE.md      # Microservice dataflow guide
+│   └── MOBILE.md            # Mobile build & Firebase Hosting guide
+└── docker-compose.yml       # Standard container deployment blueprint
+```
+
+---
+
+> **Built with ❤️ for the Google Antigravity Swarm Hackathon 2024**
