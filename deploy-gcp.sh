@@ -52,7 +52,12 @@ echo -e "\033[0;32m💾 Cloud SQL Instance: $SQL_INSTANCE\033[0m"
 
 # Step 3: Authenticate gcloud
 echo -e "\n\033[0;36m🔑 Step 1: Authenticating with Google Cloud...\033[0m"
-gcloud auth login
+active_account=$(gcloud auth list --filter="status=ACTIVE" --format="value(account)" 2>/dev/null || true)
+if [ -z "$active_account" ]; then
+    gcloud auth login
+else
+    echo -e "\033[0;32m✅ Already authenticated as: $active_account\033[0m"
+fi
 
 # Step 4: Configure Project
 echo -e "\n\033[0;36m⚙️ Step 2: Setting active project configuration...\033[0m"

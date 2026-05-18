@@ -39,7 +39,12 @@ Write-Host "💾 Cloud SQL Instance: $SqlInstance" -ForegroundColor Green
 
 # Step 3: Authenticate gcloud
 Write-Host "`n🔑 Step 1: Authenticating with Google Cloud..." -ForegroundColor Cyan
-gcloud auth login
+$activeAccount = (gcloud auth list --filter="status=ACTIVE" --format="value(account)" 2>$null)
+if ([string]::IsNullOrEmpty($activeAccount)) {
+    gcloud auth login
+} else {
+    Write-Host "✅ Already authenticated as: $activeAccount" -ForegroundColor Green
+}
 
 # Step 4: Configure Project
 Write-Host "`n⚙️ Step 2: Setting active project configuration..." -ForegroundColor Cyan
