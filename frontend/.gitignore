@@ -16,6 +16,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Local Environmental Configs
+.env
 .env*.local
 
 # Vercel / Next.js
