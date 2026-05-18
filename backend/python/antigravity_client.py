@@ -157,6 +157,100 @@ class AntigravityClient:
                 
         def get_mock_completion(p: str) -> str:
             p_lower = p.lower()
+            
+            # Detect verbosity level
+            verbosity = "default"
+            if "verbosity constraint: keep your final response extremely brief" in p_lower or "brief, concise, and direct" in p_lower:
+                verbosity = "brief"
+            elif "verbosity constraint: please provide an extremely prolonged" in p_lower or "prolonged, detailed, exhaustive" in p_lower:
+                verbosity = "detailed"
+
+            # Detect specialized agent
+            agent = "general"
+            if "causalinferenceagent" in p_lower or "causal inference" in p_lower:
+                agent = "causal"
+            elif "ethicsagent" in p_lower or "ethics" in p_lower:
+                agent = "ethics"
+            elif "criticagent" in p_lower or "critic" in p_lower:
+                agent = "critic"
+            elif "personalizationagent" in p_lower or "personalization" in p_lower:
+                agent = "personalization"
+            elif "deterministicagent" in p_lower or "deterministic" in p_lower:
+                agent = "deterministic"
+            elif "economicagent" in p_lower or "economic" in p_lower:
+                agent = "economic"
+            elif "memory" in p_lower:
+                agent = "memory"
+            elif "adversarial" in p_lower or "red team" in p_lower:
+                agent = "adversarial"
+
+            # Check if it's the swarm consensus prompt or playbook prompt
+            if "role: you are the consensus agent" in p_lower:
+                if verbosity == "brief":
+                    return '{"key_finding": "Cognitive core aligned.", "insight": "All 18 agents confirm system stability and MCP database registration.", "confidence": 0.95, "severity": "LOW", "evidence": ["Postgres MCP active"]}'
+                elif verbosity == "detailed":
+                    return '{"key_finding": "Swarm Consensus: Cognitive Infrastructure & MCP Database Fully Synchronized", "insight": "After a comprehensive 18-agent audit, the Consensus Agent reports complete alignment across all subsystems. The relational PostgreSQL MCP server is successfully cataloging table structures, vector indexes are optimized, and execution latencies remain below 12ms. Causal pathways show high positive reinforcement from structured tool-use, while our ethics auditors confirm absolute alignment with human-in-the-loop guidelines. We suggest immediate operational deployment.", "confidence": 0.98, "severity": "LOW", "evidence": ["Postgres MCP registered", "Latencies < 12ms", "Zero bias flags", "Vector indexing active"]}'
+                else:
+                    return '{"key_finding": "Swarm Consensus: System fully operational", "insight": "The swarm has reached 95% consensus. All relational MCP servers and background cognitive threads are fully synchronized. Security and latency profiles are within optimal boundaries.", "confidence": 0.95, "severity": "LOW", "evidence": ["Postgres MCP registered", "Cognitive loop online"]}'
+
+            if "role: you are the action playbook agent" in p_lower:
+                if verbosity == "brief":
+                    return '{"actions": ["Deploy Postgres MCP — lead dev — 24h"], "priority": "IMMEDIATE", "expected_outcome": "Local registry operational"}'
+                elif verbosity == "detailed":
+                    return '{"actions": ["Perform comprehensive database schema migrations and port audits — Database Team — Day 1", "Verify secondary consensus node synchronization across frontend and mobile frameworks — Integration Lead — Day 3", "Deploy high-fidelity quarantine containers to handle edge-case anomalies — Red Team — Day 7", "Initiate offline memory consolidation and dreamscape logic indexing — Cognitive Architect — Day 15", "Run final ROI and economic benefit analyses on optimized assets — Finance Team — Day 30"], "priority": "THIS_WEEK", "expected_outcome": "Complete full-stack synchronization and cognitive persistence with 40% faster tool execution."}'
+                else:
+                    return '{"actions": ["Audit Postgres MCP tools — Lead Analyst — 48h", "Verify WebSocket telemetry stream — Frontend team — 72h", "Deploy cognitive memory cache — Devops — This week"], "priority": "THIS_WEEK", "expected_outcome": "Robust tool registry and telemetry stability"}'
+
+            # Default agent responses based on role and verbosity
+            if agent == "causal":
+                if verbosity == "brief":
+                    return "Causal Inference Agent: Identified a direct causal relationship between PostgreSQL MCP registration and a 40% reduction in query latencies."
+                elif verbosity == "detailed":
+                    return "### Causal Inference Report\n\n**Upstream Causes Identified:**\n- Integration of Google Antigravity reasoning loops.\n- Activation of local PostgreSQL MCP server tools.\n\n**Downstream Effects Projected:**\n- 40% decrease in operational query latencies.\n- Seamless synchronization between Next.js frontend and Python kernel.\n\n**Detailed Intervention Strategy:**\nTo optimize this causal network, we recommend reinforcing the database index structures. Our predictive models suggest that query latency will experience a secondary drop of 15% if the `cognitive_states` index is consolidated during the nightly REM sleep phase of the DreamAgent."
+                else:
+                    return "Causal Inference Agent: Traced a strong correlation (r=0.85) between the PostgreSQL MCP server registry and reasoning accuracy. Interventions suggest that schema registration directly causes a reduction in step-by-step latency."
+
+            elif agent == "ethics":
+                if verbosity == "brief":
+                    return "Ethics Auditor: System complies fully with all safety alignment, privacy, and bias-reduction guidelines."
+                elif verbosity == "detailed":
+                    return "### Swarm Ethics & Safety Compliance Audit\n\n**Audit Summary:**\nWe have performed a comprehensive review of the active cognitive session. The data flow conforms fully with human-in-the-loop safety principles.\n\n**Compliance Metrics:**\n- Safety Alignment: 99.8% compliance. No hostile prompts detected.\n- Bias Reduction: Active mitigation of systemic weights. Zero bias flags raised.\n- Privacy: Data encryption active for memory vault persistence.\n\n**Recommendations:**\nMaintain continuous background audit loops and establish a mandatory human-approval step for high-impact database writes."
+                else:
+                    return "Ethics Auditor: Active session verified. The reasoning processes comply with all responsible AI guidelines. No alignment deviations or security anomalies detected."
+
+            elif agent == "critic":
+                if verbosity == "brief":
+                    return "Critic Agent: Identified a potential memory vault latency under high-concurrency loads."
+                elif verbosity == "detailed":
+                    return "### Critic Agent Architectural Audit\n\n**Skeptical Analysis:**\nWhile the proposed architecture is structurally sound, several edge cases require immediate stress-testing. Specifically, memory vault retrieval times may degrade by 15-20% under high concurrency loads if vector indexes are not cached locally.\n\n**Key Architectural Blindspots:**\n1. Lack of concurrent write-locks on session storage.\n2. Potential database connection timeouts during intensive ReAct loops.\n\n**Recommended Mitigations:**\nImplement a secondary connection pool and add transactional fallback routines to prevent state corruption."
+                else:
+                    return "Critic Agent: The current cognitive loop is operational, but we must verify Postgres MCP connections under high-load simulations to avoid minor compute bottlenecks."
+
+            elif agent == "personalization":
+                if verbosity == "brief":
+                    return "Personalization Agent: Outputs tailored to your explicit profile and preference for high-level technical summaries."
+                elif verbosity == "detailed":
+                    return "### Personalized Cognitive Dashboard\n\n**User Profile:** Senior Developer / AI Engineer\n**Preferred Tone:** Highly technical, precise, mathematical\n\n**Tailored Insights:**\nBased on your interaction history, we have formatted all agent responses to emphasize structural diagrams, latencies, and execution parameters. The cognitive kernel has automatically adjusted its explanation depth to match your advanced expertise level in distributed systems and multi-agent consensus networks."
+                else:
+                    return "Personalization Agent: Adjusted active vocabulary and output depth to match your developer profile and preferred technical expertise level."
+
+            elif agent == "deterministic":
+                if verbosity == "brief":
+                    return "Deterministic Agent: System constraints verified: 18 agents online, 0 failures, 100% execution correctness."
+                elif verbosity == "detailed":
+                    return "### Deterministic System Validation\n\n**Mathematical Boundaries:**\n- State Variables: N = 18 cognitive agents.\n- Execution Model: Strict state transition logic where P(Success) = 1.0 under standard bounds.\n- Error Code: 0x00 (No anomalies detected).\n\n**Rigor Audit Checklist:**\n- [x] Conformity to strict structural rules\n- [x] Postgres MCP schema constraint validation\n- [x] Multi-agent protocol envelope signature validation"
+                else:
+                    return "Deterministic Agent: System constraints strictly checked. All relational operations conform to the predefined mathematical rules and database boundary limits."
+
+            elif agent == "economic":
+                if verbosity == "brief":
+                    return "Economic Agent: Projected ROI is 245% with a Net Present Value of $3,675 over the 30-day timeline."
+                elif verbosity == "detailed":
+                    return "### Economic Feasibility Analysis\n\n**Financial Projections (30-Day Horizon):**\n- Estimated Development Cost: $1,500\n- Projected Operational Benefits: $5,175\n- Net Present Value (NPV): $3,675\n- Return on Investment (ROI): 245.0%\n\n**Synergy Adjustments:**\nDeploying the postgres MCP server reduces query latencies by 40%, generating indirect time savings valued at $850/month."
+                else:
+                    return "Economic Agent: Cost-benefit ratio calculated at 1:3.45. The Net Present Value is positive, showing high ROI feasibility for this deployment."
+
+            # General mock completions fallbacks
             if "next to achieve this goal" in p_lower or "what should i think" in p_lower:
                 return "I will analyze the system state and formulate a plan to achieve the goal: Verify the cognitive system is operational."
             if "which tool should i use" in p_lower or "respond with json" in p_lower:
@@ -167,7 +261,13 @@ class AntigravityClient:
                 return "Cognitive modeling provides optimal reasoning paths.\nCausal discovery establishes clear correlation structures."
             if "synthesize a balanced debate" in p_lower:
                 return "The debate highlights the balance between proactive causal reasoning and rigorous self-validation."
-            return "Cognitive alignment verified. Operational state confirmed."
+            
+            if verbosity == "brief":
+                return "Cognitive alignment verified. Operational state confirmed."
+            elif verbosity == "detailed":
+                return "### Sentience Cognitive Core Synapse\n\n**Diagnostic Summary:**\nThe cognitive operating system is in an optimal state. The multi-agent swarm orchestrator has verified the active PostgreSQL MCP server registries and confirmed that all 18 worker nodes are functional.\n\n**Active Telemetry Profile:**\n- Connection State: Online\n- Reasoning Steps: Verified\n- Latency Index: 12ms (Optimal)\n\nWe recommend continuing with background maintenance routines."
+            else:
+                return "Cognitive alignment verified. Operational state confirmed."
                 
         # Only bypass if there is no API key configured
         if not self.config.api_key:

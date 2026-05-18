@@ -54,6 +54,8 @@ export function ChatInterface() {
   });
 
   const addNotification = useStore((state) => state.addNotification);
+  const outputVerbosity = useStore((state) => state.outputVerbosity);
+  const setOutputVerbosity = useStore((state) => state.setOutputVerbosity);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
@@ -100,6 +102,7 @@ export function ChatInterface() {
         datasources: activeDatasources,
         agent_id: selectedAgent,
         system_prompt: customSystemPrompts[selectedAgent],
+        output_verbosity: outputVerbosity,
       });
 
       if (inputRef.current) inputRef.current.value = "";
@@ -172,6 +175,16 @@ export function ChatInterface() {
                   {agent.name} Agent
                 </option>
               ))}
+            </select>
+            {/* Verbosity selector */}
+            <select
+              value={outputVerbosity}
+              onChange={(e) => setOutputVerbosity(e.target.value as "brief" | "default" | "detailed")}
+              className="ml-2 flex-1 bg-card border border-border/30 rounded-lg px-2.5 py-1 text-[11px] font-black text-amber-300 tracking-wider focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-300 cursor-pointer"
+            >
+              <option value="brief">Brief</option>
+              <option value="default">Default</option>
+              <option value="detailed">Detailed</option>
             </select>
           </div>
 

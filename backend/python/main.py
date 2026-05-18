@@ -171,10 +171,12 @@ async def chat(req: ChatRequest):
     # Resolve agent selection and custom system prompt from client context
     agent_id = "swarm"  # default: use full 3-agent chain
     system_prompt = None
+    output_verbosity = "default"
 
     if req.context and isinstance(req.context, dict):
         agent_id = req.context.get("agent_id", "swarm")
         system_prompt = req.context.get("system_prompt", None)
+        output_verbosity = req.context.get("output_verbosity", "default")
 
     # Build document context from uploaded vault files
     doc_contexts = []
@@ -193,7 +195,7 @@ async def chat(req: ChatRequest):
         orchestrator = SwarmOrchestrator(system_prompt=system_prompt)
 
         try:
-            result = await orchestrator.run(query=req.message, doc_context=doc_context_str)
+            result = await orchestrator.run(query=req.message, doc_context=doc_context_str, output_verbosity=output_verbosity)
 
             # Format rich response text
             response_text = f"{result.key_finding}\n\n{result.insight}"
@@ -289,38 +291,76 @@ async def chat(req: ChatRequest):
     full_prompt += f"User Query: {req.message}"
 
     try:
-        result = await agent.reason_and_act(full_prompt)
+        # Pass the output_verbosity through the context dict
+        result = await agent.reason_and_act(full_prompt, context={"output_verbosity": output_verbosity})
 
         thoughts = []
+        observations = []
         if result.reasoning_chain:
             for step in result.reasoning_chain:
                 if step.thought and step.thought.strip():
                     thoughts.append(step.thought.strip())
+                if step.observation and step.observation.strip():
+                    observations.append(step.observation.strip())
 
-        response_text = "\n\n".join(thoughts) if thoughts else (
-            result.data.get("response", "") if isinstance(result.data, dict)
-            else f"{class_name} processed your request."
-        )
+        # Synthesize a highly customized and verbosity-compliant final response
+        synthesis_prompt = f"""You are the {class_name}.
+Role directive: {system_prompt or 'You are a cognitive reasoning agent.'}
+
+Goal / User Query: {req.message}
+
+Here is your internal reasoning chain:
+{chr(10).join(f"- Thought: {t}" for t in thoughts)}
+
+Here are your tool observations:
+{chr(10).join(f"- Observation: {o}" for o in observations)}
+
+Please synthesize the final response for the user.
+Role-specific instruction: You must act as {class_name} and adopt its unique expertise, style, and tone in your response. Make sure your role as {class_name} is highly visible and clear in your response.
+"""
+
+        # Add verbosity constraint
+        if output_verbosity == "brief":
+            synthesis_prompt += "\nVerbosity constraint: Keep your final response extremely brief, direct, and concise (exactly 1-2 sentences). Do not include any verbose introductory or closing remarks."
+        elif output_verbosity == "detailed":
+            synthesis_prompt += "\nVerbosity constraint: Please provide an extremely prolonged, detailed, elaborate, and highly exhaustive final response. Dive deep into the analysis, provide extensive explanations of your reasoning, outline the causal/ethical/deterministic considerations of your findings, and structure your answer with clear markdown headings, bold sections, and detailed bullet points."
+        else:
+            synthesis_prompt += "\nVerbosity constraint: Provide a standard, well-structured, informative response (3-4 sentences or 2-3 short paragraphs)."
+
+        synthesis_raw = await agent.antigravity.generate(synthesis_prompt)
+        response_text = ""
+        if hasattr(synthesis_raw, 'data') and isinstance(synthesis_raw.data, dict):
+            response_text = synthesis_raw.data.get('choices', [{}])[0].get('message', {}).get('content', '')
+        else:
+            response_text = str(synthesis_raw)
 
         if not response_text.strip():
             response_text = f"Reasoning complete by {class_name}."
 
+        # Extract suggested actions, evidence, and severity from the synthesized response
+        actions_list = ["Run full swarm analysis", "Explore causal chain"]
+        if "🎯 Actions:" in response_text or "Actions:" in response_text:
+            lines = response_text.split("\n")
+            actions_list = [l.strip("•-* ").strip() for l in lines if (l.strip().startswith("•") or l.strip().startswith("-") or l.strip().startswith("*"))][:4]
+            if not actions_list:
+                actions_list = ["Review findings", "Deploy modifications"]
+
         response_obj = ChatResponse(
             content=response_text,
             intent="single_agent_reasoning",
-            confidence=result.confidence,
+            confidence=result.confidence or 0.8,
             severity="MEDIUM",
             evidence=[],
-            actions=[],
+            actions=actions_list,
             sources=[],
-            suggested_actions=["Run full swarm analysis", "Explore causal chain"],
+            suggested_actions=actions_list[:2] if actions_list else ["Run full swarm analysis", "Explore causal chain"],
             agent_used=class_name,
             agent_chain=[{
                 "agent_id": agent_id,
                 "agent_name": class_name,
                 "emoji": "🤖",
                 "input_summary": req.message[:80],
-                "output_summary": response_text[:100],
+                "output_summary": response_text[:100] + "...",
                 "confidence": result.confidence or 0.7,
                 "duration_ms": result.execution_time * 1000 if result.execution_time else 0,
                 "status": "success"
@@ -335,7 +375,7 @@ async def chat(req: ChatRequest):
             "iso_time": datetime.utcnow().isoformat(),
             "user": req.message,
             "assistant": response_text,
-            "confidence": result.confidence
+            "confidence": result.confidence or 0.8
         })
 
         return response_obj

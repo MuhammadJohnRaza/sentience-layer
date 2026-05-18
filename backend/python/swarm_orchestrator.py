@@ -105,13 +105,31 @@ class SwarmOrchestrator:
             "You reason in structured, specific, evidence-based steps using formal message handoffs."
         )
 
-    async def run(self, query: str, doc_context: str = "") -> SwarmResult:
+    async def run(self, query: str, doc_context: str = "", output_verbosity: str = "default") -> SwarmResult:
         start_total = time.time()
         session_id = f"sess_{int(start_total)}_{uuid.uuid4().hex[:6]}"
         chain: List[HandoffStep] = []
         all_thoughts: List[str] = []
         envelopes_traced: List[Dict[str, Any]] = []
         antigravity = get_antigravity_client()
+
+        # Adjust prompt parameters based on output verbosity
+        critic_len_instruction = ""
+        consensus_len_instruction = ""
+        playbook_len_instruction = ""
+
+        if output_verbosity == "brief":
+            critic_len_instruction = "Keep your critique extremely brief, concise, and direct (exactly 1 sentence)."
+            consensus_len_instruction = "Keep your insight extremely brief and direct (exactly 1 sentence)."
+            playbook_len_instruction = "Provide only 1-2 brief actions."
+        elif output_verbosity == "detailed":
+            critic_len_instruction = "Provide a highly prolonged, detailed, exhaustive, and comprehensive critique. Dive deep into all complexities and technical details (at least 6-8 sentences)."
+            consensus_len_instruction = "Provide an extremely prolonged, highly detailed, exhaustive, and comprehensive insight with deep structural analyses and thorough logical deductions (at least 8-10 sentences)."
+            playbook_len_instruction = "Provide a highly comprehensive and detailed playbook containing 5-7 concrete actions with elaborate details, owner assignments, and specific milestones."
+        else: # default
+            critic_len_instruction = "Provide a standard critique (2-3 sentences)."
+            consensus_len_instruction = "Provide a standard detailed insight (2-4 sentences)."
+            playbook_len_instruction = "Provide 3-5 concrete actions."
 
         # ── AGENT 1: CRITIC ───────────────────────────────────────────────
         t0 = time.time()
@@ -121,10 +139,11 @@ class SwarmOrchestrator:
 
 ROLE: You are the Critic Agent. Your only job is to rigorously analyse the query below.
 You must be SPECIFIC — not generic. Cite locations, figures, latencies, or counts where possible.
+{critic_len_instruction}
 
 Return ONLY valid JSON:
 {{
-  "critique": "<2-3 sentence specific analysis>",
+  "critique": "<critique analysis conforming to length guidelines>",
   "risks": ["<specific risk 1>", "<specific risk 2>"],
   "confidence": <0.0-1.0>,
   "severity": "<CRITICAL|HIGH|MEDIUM|LOW>",
@@ -192,6 +211,7 @@ QUERY: {query}
 
 ROLE: You are the Consensus Agent. You receive the Critic's analysis (forwarded via formal AgentMessageEnvelope protocol) and synthesize it into ONE clear, specific, actionable insight.
 Specificity is mandatory — use numbers, locations, timeframes where possible.
+{consensus_len_instruction}
 
 CRITIC'S FORMAL PAYLOAD:
 {json.dumps(critic_envelope.payload, indent=2)}
@@ -201,7 +221,7 @@ ORIGINAL QUERY: {query}
 Return ONLY valid JSON:
 {{
   "key_finding": "<One-line headline — specific, not generic>",
-  "insight": "<2-4 sentence detailed insight with specifics>",
+  "insight": "<detailed insight conforming to length guidelines>",
   "confidence": <0.0-1.0>,
   "severity": "<CRITICAL|HIGH|MEDIUM|LOW>",
   "evidence": ["<specific evidence 1>", "<specific evidence 2>", "<specific evidence 3>"]
@@ -262,8 +282,9 @@ Return ONLY valid JSON:
 
         playbook_prompt = f"""{self.system_prompt}
 
-ROLE: You are the Action Playbook Agent. You generate 3-5 CONCRETE, EXECUTABLE actions based on the consensus insight envelope payload.
+ROLE: You are the Action Playbook Agent. You generate actions based on the consensus insight envelope payload.
 Each action must have: What to do + Who owns it + When to do it.
+{playbook_len_instruction}
 
 CONSENSUS INSIGHT PAYLOAD:
 {json.dumps(consensus_envelope.payload, indent=2)}
@@ -271,9 +292,8 @@ CONSENSUS INSIGHT PAYLOAD:
 Return ONLY valid JSON:
 {{
   "actions": [
-    "<Action 1: specific task — owner — deadline>",
-    "<Action 2: specific task — owner — deadline>",
-    "<Action 3: specific task — owner — deadline>"
+    "<specific task — owner — deadline>",
+    ...
   ],
   "priority": "<IMMEDIATE|THIS_WEEK|THIS_MONTH>",
   "expected_outcome": "<What measurable success looks like>"

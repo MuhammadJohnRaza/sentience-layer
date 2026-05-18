@@ -17,6 +17,9 @@ interface AppState {
   // Theme
   theme: "light" | "dark" | "system";
   setTheme: (theme: "light" | "dark" | "system") => void;
+  // Output verbosity for agent responses
+  outputVerbosity: "brief" | "default" | "detailed";
+  setOutputVerbosity: (level: "brief" | "default" | "detailed") => void;
   // Sidebar
   sidebarOpen: boolean;
   toggleSidebar: () => void;
@@ -49,7 +52,12 @@ export const useStore = create<AppState>()(
         set({
           user,
         }),
-      theme: "system",
+      theme: "dark",
+      outputVerbosity: "default",
+      setOutputVerbosity: (level) =>
+        set({
+          outputVerbosity: level,
+        }),
       setTheme: (theme) =>
         set({
           theme,
@@ -102,6 +110,7 @@ export const useStore = create<AppState>()(
         sidebarOpen: state.sidebarOpen,
         user: state.user,
         chatMessages: state.chatMessages,
+        outputVerbosity: state.outputVerbosity,
       }),
     },
   ),
