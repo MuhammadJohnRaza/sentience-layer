@@ -30,3 +30,7 @@ android-sdk/
 
 # Firebase temporary files
 .firebase/
+
+# Prevent tracking compiled binaries
+public/*.apk
+
