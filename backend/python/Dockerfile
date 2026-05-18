@@ -15,6 +15,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy all python files
 COPY . .
 
+# Create symlink for backend.python imports compatibility inside container
+RUN mkdir -p /app/backend && ln -s /app /app/backend/python
+
+ENV PYTHONPATH=/app
 ENV PORT=8000
 EXPOSE 8000
 

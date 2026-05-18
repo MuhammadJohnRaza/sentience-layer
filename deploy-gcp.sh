@@ -85,6 +85,12 @@ fi
 # Step 7: Build Container via Google Cloud Build
 echo -e "\n\033[0;36m🛠️ Step 5: Submitting build to Google Cloud Builds...\033[0m"
 IMAGE_TAG="$REGION-docker.pkg.dev/$PROJECT_ID/sentience-repo/backend-python:latest"
+
+# Copy sentience_kernel module into python backend workspace for Docker packaging
+echo "Copying sentience_kernel into backend/python/ for container build..."
+rm -rf ./backend/python/sentience_kernel
+cp -r ./sentience_kernel ./backend/python/
+
 gcloud builds submit --tag "$IMAGE_TAG" ./backend/python
 
 # Step 8: Provision PostgreSQL on Cloud SQL
@@ -120,6 +126,7 @@ DB_URL="postgresql://sentience:$SQL_PASSWORD@/sentience_db?host=/cloudsql/$CONNE
 gcloud run deploy sentience-backend \
     --image "$IMAGE_TAG" \
     --region "$REGION" \
+    --port 8000 \
     --add-cloudsql-instances "$CONNECTION_NAME" \
     --set-env-vars "DATABASE_URL=$DB_URL,APP_ENV=production,APP_DEBUG=false" \
     --allow-unauthenticated

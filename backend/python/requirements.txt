@@ -10,3 +10,5 @@ librosa
 soundfile
 aiohttp
 pydantic-settings
+python-multipart
+websockets
