@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "367781661404",
+    "project_id": "sentenceproject-496712",
+    "storage_bucket": "sentenceproject-496712.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:367781661404:android:4f0fdffc0da25bde684219",
+        "android_client_info": {
+          "package_name": "org.sentience.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDv2EwGFXEdfmC9w3Di_IvN9YT3nqAiHM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
