@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "firebase:deploy": "npm run build && firebase deploy --only hosting:sentenceproject-496712-26ab3"
+    "firebase:deploy": "npm run build && firebase deploy --only hosting:sentenceproject-496712-26ab3 --project sentenceproject-496712"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
