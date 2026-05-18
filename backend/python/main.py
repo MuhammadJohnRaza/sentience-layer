@@ -574,13 +574,13 @@ def analyze_economics(action_id: str):
 def causal_graph():
     return {
         "nodes": [
-            {"id": "mcp_tools", "label": "MCP Tools Registered", "value": 3.0, "variance": 0.0},
-            {"id": "reasoning_accuracy", "label": "Reasoning Accuracy", "value": 0.95, "variance": 0.02},
-            {"id": "system_latency", "label": "System Latency", "value": 120.0, "variance": 15.0}
+            {"id": "mcp_tools", "label": "MCP Tools", "value": 3.0, "variance": 0.0, "x": 0.25, "y": 0.5, "type": "intervention"},
+            {"id": "reasoning_accuracy", "label": "Reasoning Accuracy", "value": 0.95, "variance": 0.02, "x": 0.5, "y": 0.3, "type": "outcome"},
+            {"id": "system_latency", "label": "System Latency", "value": 120.0, "variance": 15.0, "x": 0.75, "y": 0.5, "type": "outcome"}
         ],
         "edges": [
-            {"source": "mcp_tools", "target": "reasoning_accuracy", "strength": 0.45},
-            {"source": "reasoning_accuracy", "target": "system_latency", "strength": -0.2}
+            {"source": "mcp_tools", "target": "reasoning_accuracy", "strength": 0.45, "effectSize": 0.45, "confidence": 0.88},
+            {"source": "reasoning_accuracy", "target": "system_latency", "strength": -0.2, "effectSize": -0.2, "confidence": 0.92}
         ]
     }
 
