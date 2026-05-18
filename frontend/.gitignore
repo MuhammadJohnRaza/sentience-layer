@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Next.js Production Build
+.next/
+out/
+
+# Testing
+/coverage
+
+# Debugging logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local Environmental Configs
+.env*.local
+
+# Vercel / Next.js
+.vercel
+
+# Firebase temporary files
+.firebase/
