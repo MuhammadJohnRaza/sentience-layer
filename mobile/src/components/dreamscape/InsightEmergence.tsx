@@ -3,14 +3,14 @@ import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
-export function InsightEmergence() {
+export function InsightEmergence({ refreshTrigger }: { refreshTrigger?: number }) {
   const [insights, setInsights] = useState<string[]>([]);
   useEffect(() => {
     api.getDreamReports().then((data) => {
       const allInsights = data.flatMap((r: any) => r.insightsDiscovered || []);
       setInsights(allInsights);
     });
-  }, []);
+  }, [refreshTrigger]);
   return (
     <Card className="h-96">
       {" "}
@@ -18,7 +18,7 @@ export function InsightEmergence() {
         {" "}
         <CardTitle>Insight Emergence</CardTitle>{" "}
       </CardHeader>{" "}
-      <CardContent>
+      <CardContent className="overflow-y-auto max-h-[300px]">
         {" "}
         <div className="space-y-2">
           {" "}
@@ -33,7 +33,7 @@ export function InsightEmergence() {
               {" "}
               <div className="h-2 w-2 rounded-full bg-purple-500" />{" "}
               <span className="text-sm">{insight}</span>{" "}
-              <Badge variant="outline" className="ml-auto text-xs">
+              <Badge variant="outline" className="ml-auto text-xs shrink-0">
                 Dream
               </Badge>{" "}
             </div>
@@ -43,3 +43,4 @@ export function InsightEmergence() {
     </Card>
   );
 }
+

@@ -49,9 +49,10 @@ export function VaultBrowser() {
       await api.uploadDocument(formData);
       addNotification(`Successfully encrypted and stored ${file.name} to Vault! 🔒`);
       fetchDocs();
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      addNotification("Upload failed. Verify server is online.");
+      const errMsg = error?.message || "Upload failed. Verify server is online.";
+      addNotification(errMsg);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";

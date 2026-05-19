@@ -6,6 +6,48 @@ import { API_BASE_URL } from "./constants";
 
 // Local stateful fallbacks for document uploads and trace history
 let localVaultDocuments: any[] = [];
+let localDreamReports: any[] = [
+  {
+    id: "dream_report_1",
+    title: "Database Schema Consolidation",
+    summary: "Optimized indices on cognitive_states table and verified integrity.",
+    coherence: 0.94,
+    sleepState: "REM",
+    timestamp: "2026-05-17T18:10:00Z",
+    insightsDiscovered: ["Seeding database results in 40% faster tool execution speeds."],
+    schemasCreated: ["cognitive_states", "vault_metadata"]
+  }
+];
+let localDebates: any[] = [
+  {
+    id: "debate-1",
+    topic: "Should we auto-execute high-confidence actions without human sign-off?",
+    forPct: 58,
+    againstPct: 42,
+    criticAgentArgs: [
+      "Auto-execution poses extreme risk if SQLite containment fails during live Postgres migrations.",
+      "A rogue MCP mutation could overwrite active vector tables without rollback triggers."
+    ],
+    consensusAgentArgs: [
+      "We mandate a 94% confidence threshold and sandboxed Monte Carlo tests before deployment.",
+      "Containment protocols are already active and simulated with zero leakage detected."
+    ]
+  },
+  {
+    id: "debate-2",
+    topic: "Is the postgres_list_tables tool relationship strong enough to justify full trust?",
+    forPct: 82,
+    againstPct: 18,
+    criticAgentArgs: [
+      "External database connections are highly sensitive to network latency drops.",
+      "Adversarial schema injections could bypass the ReAct parser under heavy parallel loads."
+    ],
+    consensusAgentArgs: [
+      "Caching queries through local memory maps prevents index failures entirely.",
+      "All query inputs are audited by the security wrapper before parsing."
+    ]
+  }
+];
 let localMemoryNodes: any[] = [
   {
     id: "mem_chat_1",
@@ -71,8 +113,16 @@ async function fetchApi<T>(
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new ApiError(response.status, error);
+      let errorMessage = "Unknown API Error";
+      try {
+        const errorJson = await response.json();
+        errorMessage = errorJson.detail || errorJson.message || JSON.stringify(errorJson);
+      } catch {
+        try {
+          errorMessage = await response.text();
+        } catch {}
+      }
+      throw new ApiError(response.status, errorMessage);
     }
 
     return await response.json();
@@ -474,13 +524,114 @@ async function fetchApi<T>(
       ) as any;
     }
 
+    // Memory Consolidation Fallback
+    if (endpoint.includes("/api/dream/consolidate")) {
+      let memoryId = "";
+      try {
+        if (options.body) {
+          memoryId = JSON.parse(options.body as string).memoryId || "";
+        }
+      } catch {}
+
+      const report = {
+        id: `dream_report_${Date.now()}`,
+        title: `Consolidated Memory: ${memoryId}`,
+        summary: `Offline dream consolidation successfully integrated memory node ${memoryId} into secure vault storage.`,
+        coherence: 0.96,
+        sleepState: "REM",
+        timestamp: new Date().toISOString(),
+        insightsDiscovered: [
+          `Consolidation of ${memoryId} reduces relational fragmentation index.`
+        ],
+        schemasCreated: ["idx_consolidated_cache"]
+      };
+      localDreamReports.unshift(report);
+      // Remove consolidated memory node from local memory nodes
+      localMemoryNodes = localMemoryNodes.filter(m => m.id !== memoryId);
+      return report as any;
+    }
+
+    // Dream Reports Fallback
+    if (endpoint.includes("/api/dream/reports")) {
+      return localDreamReports as any;
+    }
+
+    // Doubt Debates Fallback
+    if (endpoint.includes("/api/doubt/debates")) {
+      return localDebates as any;
+    }
+
+    // Doubt Debate Post Fallback
+    if (endpoint.includes("/api/doubt/debate")) {
+      let topic = "";
+      try {
+        if (options.body) {
+          topic = JSON.parse(options.body as string).topic || "";
+        }
+      } catch {}
+
+      const newDebate = {
+        id: `debate-${Date.now()}`,
+        topic: topic || "Should we deploy automated guardrail validators?",
+        forPct: 74,
+        againstPct: 26,
+        criticAgentArgs: [
+          `Unchecked validation on '${topic || "the topic"}' introduces high memory latency bottlenecks.`,
+          "Redundancy loops might trigger transaction containment lockouts."
+        ],
+        consensusAgentArgs: [
+          `We enforce 94% threshold checks before executing updates.`,
+          "Multi-agent protocol verifies complete schema alignment on registry tables."
+        ]
+      };
+      localDebates.unshift(newDebate);
+      return newDebate as any;
+    }
+
+    // Doubt Stats Fallback
+    if (endpoint.includes("/api/doubt/stats")) {
+      if (!localDebates.length) {
+        return {
+          entropy: 0.35,
+          totalAudits: 28,
+          confidenceLevels: {
+            high: 55,
+            medium: 25,
+            low: 15,
+            uncertainty: 5
+          }
+        } as any;
+      }
+      const avgFor = localDebates.reduce((acc, d) => acc + d.forPct, 0) / localDebates.length;
+      const avgAgainst = localDebates.reduce((acc, d) => acc + d.againstPct, 0) / localDebates.length;
+      
+      const high = Math.round(avgFor * 0.7);
+      const med = Math.round(avgFor * 0.3);
+      const low = Math.round(avgAgainst * 0.7);
+      const unc = 100 - (high + med + low);
+
+      // Simple Shannon Entropy H(X)
+      const probs = [high/100, med/100, low/100, unc/100];
+      const entropy = -probs.reduce((sum, p) => p > 0 ? sum + p * Math.log2(p) : sum, 0);
+
+      return {
+        entropy,
+        totalAudits: localDebates.length,
+        confidenceLevels: {
+          high,
+          medium: med,
+          low,
+          uncertainty: Math.max(0, unc)
+        }
+      } as any;
+    }
+
     // Safe empty fallbacks for remaining list endpoints to prevent render breaks
     if (
       endpoint.includes("/api/chat/history") || 
       endpoint.includes("/api/insights") || 
       endpoint.includes("/api/actions") || 
       endpoint.includes("/api/agents/") || 
-      endpoint.includes("/api/dream/reports") || 
       endpoint.includes("/api/premonition")
     ) {
       return [] as any;
@@ -573,6 +724,20 @@ export const api = {
 
   // Dreams
   getDreamReports: () => fetchApi<any[]>("/api/dream/reports"),
+  consolidateMemory: (memoryId: string, content: string) =>
+    fetchApi("/api/dream/consolidate", {
+      method: "POST",
+      body: JSON.stringify({ memoryId, content }),
+    }),
+
+  // Doubt / Debates
+  getDebates: () => fetchApi<any[]>("/api/doubt/debates"),
+  createDebate: (topic: string) =>
+    fetchApi<any>("/api/doubt/debate", {
+      method: "POST",
+      body: JSON.stringify({ topic }),
+    }),
+  getDoubtStats: () => fetchApi<any>("/api/doubt/stats"),
 
   // Premonitions
   getPremonitions: () => fetchApi<any[]>("/api/premonition"),

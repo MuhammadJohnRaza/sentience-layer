@@ -4,8 +4,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
 
 interface DreamNode {
+  id: string;
   x: number;
   y: number;
   vx: number;
@@ -16,22 +18,68 @@ interface DreamNode {
   category: string;
   schema: string;
   impact: number;
+  isCollapsing?: boolean;
 }
 
-const MEMORY_TRACES = [
-  { title: "Postgres Schema Alignment", category: "MCP", schema: "ALTER TABLE trace ADD COLUMN alignment_vector DOUBLE PRECISION[]", impact: 94 },
-  { title: "Vector Index Consolidation", category: "Memory", schema: "CREATE INDEX ON memory USING ivfflat (vector cosine_ops)", impact: 91 },
-  { title: "Consensus Node Synchronization", category: "Swarm", schema: "UPDATE nodes SET consensus_status = 'aligned' WHERE latency < 20", impact: 88 },
-  { title: "Adversarial Stress Verification", category: "Quarantine", schema: "SELECT verify_containment_vault('agent_doubt_trace_4')", impact: 97 },
-  { title: "Economic Cost Hedging", category: "Tokenomics", schema: "SELECT compute_roi_bounds(245.0, 0.95)", impact: 85 }
-];
-
-export function DreamStream() {
+export function DreamStream({ onConsolidated }: { onConsolidated?: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [selectedNode, setSelectedNode] = useState<DreamNode | null>(null);
   const [consolidatedCount, setConsolidatedCount] = useState(148);
   const [isConsolidating, setIsConsolidating] = useState(false);
   const nodesRef = useRef<DreamNode[]>([]);
+
+  // Function to fetch live memory nodes and initialize canvas particles
+  const loadMemories = async (width: number, height: number) => {
+    try {
+      let data = await api.getMemory();
+      if (!data || data.length === 0) {
+        // Safe mock seeds if memory store is empty
+        data = [
+          {
+            id: "mem_chat_1",
+            content: "Checkout conversion query analysis: Correlation identified between Postgres connection pools and active cart drop-off thresholds.",
+            tags: ["postgres", "checkout"]
+          },
+          {
+            id: "mem_action_1",
+            content: "Optimized Postgres checkout index wrappers and scaled connection pool limits from 14% to 92% impact.",
+            tags: ["action", "optimization"]
+          },
+          {
+            id: "mem_doubt_1",
+            content: "SQLite quarantine check: Transaction drift loop anomaly successfully detected and contained in Doubt Room sandbox.",
+            tags: ["security", "sandbox"]
+          },
+          {
+            id: "mem_vault_1",
+            content: "Uploaded diagnostic trace: trace_a7b8e.txt containing multi-agent critical path trace data.",
+            tags: ["vault", "telemetry"]
+          }
+        ];
+      }
+
+      const newNodes: DreamNode[] = data.map((m: any) => {
+        const title = m.content.includes(":") ? m.content.split(":")[0] : m.content.slice(0, 32);
+        const category = m.tags && m.tags[0] ? m.tags[0].toUpperCase() : "TRACE";
+        return {
+          id: m.id,
+          x: Math.random() * (width - 40) + 20,
+          y: Math.random() * (height - 40) + 20,
+          vx: (Math.random() - 0.5) * 0.6,
+          vy: (Math.random() - 0.5) * 0.6,
+          radius: Math.random() * 5 + 6,
+          alpha: Math.random() * 0.4 + 0.5,
+          title: title,
+          category: category,
+          schema: m.content,
+          impact: Math.floor(Math.random() * 15) + 83
+        };
+      });
+      nodesRef.current = newNodes;
+    } catch (err) {
+      console.error("Failed to load memory nodes for DreamStream:", err);
+    }
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -51,45 +99,25 @@ export function DreamStream() {
     };
     window.addEventListener("resize", handleResize);
 
-    // Initialize interactive neural particles
-    const initNodes = () => {
-      const newNodes: DreamNode[] = [];
-      for (let i = 0; i < 15; i++) {
-        const trace = MEMORY_TRACES[i % MEMORY_TRACES.length];
-        newNodes.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.8,
-          vy: (Math.random() - 0.5) * 0.8,
-          radius: Math.random() * 8 + 4,
-          alpha: Math.random() * 0.5 + 0.4,
-          title: trace.title,
-          category: trace.category,
-          schema: trace.schema,
-          impact: trace.impact
-        });
-      }
-      nodesRef.current = newNodes;
-    };
-
-    initNodes();
+    loadMemories(width, height);
 
     const draw = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // Create a gorgeous glowing cosmic background gradient
+      // Cosmic dark gradient background
       const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 10, width / 2, height / 2, width);
-      bgGrad.addColorStop(0, "#080612");
+      bgGrad.addColorStop(0, "#090615");
       bgGrad.addColorStop(1, "#030206");
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, width, height);
 
-      // Draw connection links (neural net effect)
+      // Draw connections
       ctx.strokeStyle = "rgba(139, 92, 246, 0.08)";
       ctx.lineWidth = 1;
       const nodes = nodesRef.current;
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
+          if (nodes[i].isCollapsing || nodes[j].isCollapsing) continue;
           const dx = nodes[i].x - nodes[j].x;
           const dy = nodes[i].y - nodes[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
@@ -102,30 +130,46 @@ export function DreamStream() {
         }
       }
 
-      // Draw and update particles
-      nodes.forEach((node) => {
-        // Move particle
-        node.x += node.vx;
-        node.y += node.vy;
+      // Update and draw nodes
+      nodesRef.current = nodes.filter((node) => {
+        if (node.isCollapsing) {
+          // Micro-animation: pull particle to center and implode
+          const dx = width / 2 - node.x;
+          const dy = height / 2 - node.y;
+          node.x += dx * 0.08;
+          node.y += dy * 0.08;
+          node.radius -= 0.35;
+          if (node.radius <= 0.5) {
+            return false; // delete node
+          }
+        } else {
+          node.x += node.vx;
+          node.y += node.vy;
 
-        // Bounce on borders
-        if (node.x < 0 || node.x > width) node.vx *= -1;
-        if (node.y < 0 || node.y > height) node.vy *= -1;
+          if (node.x < 10 || node.x > width - 10) node.vx *= -1;
+          if (node.y < 10 || node.y > height - 10) node.vy *= -1;
+        }
 
-        // Draw glowing particle
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = "rgba(167, 139, 250, 0.4)";
+        ctx.shadowBlur = node.isCollapsing ? 24 : 12;
+        ctx.shadowColor = node.isCollapsing ? "rgba(236, 72, 153, 0.6)" : "rgba(167, 139, 250, 0.4)";
         ctx.beginPath();
-        
+
         const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.radius);
-        grad.addColorStop(0, "rgba(255, 255, 255, 0.9)");
-        grad.addColorStop(0.4, "rgba(167, 139, 250, 0.8)");
-        grad.addColorStop(1, "rgba(139, 92, 246, 0)");
-        
+        if (node.isCollapsing) {
+          grad.addColorStop(0, "rgba(255, 255, 255, 1)");
+          grad.addColorStop(0.5, "rgba(236, 72, 153, 0.9)");
+          grad.addColorStop(1, "rgba(219, 39, 119, 0)");
+        } else {
+          grad.addColorStop(0, "rgba(255, 255, 255, 0.9)");
+          grad.addColorStop(0.4, "rgba(167, 139, 250, 0.8)");
+          grad.addColorStop(1, "rgba(139, 92, 246, 0)");
+        }
+
         ctx.fillStyle = grad;
         ctx.arc(node.x, node.y, node.radius * 1.5, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0; // reset
+        ctx.shadowBlur = 0;
+        return true;
       });
 
       animationFrameId = requestAnimationFrame(draw);
@@ -140,6 +184,7 @@ export function DreamStream() {
 
       let found: DreamNode | null = null;
       nodesRef.current.forEach((node) => {
+        if (node.isCollapsing) return;
         const dx = node.x - clickX;
         const dy = node.y - clickY;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -164,14 +209,33 @@ export function DreamStream() {
     };
   }, []);
 
-  const triggerConsolidation = () => {
-    if (!selectedNode) return;
+  const triggerConsolidation = async () => {
+    if (!selectedNode || isConsolidating) return;
     setIsConsolidating(true);
-    setTimeout(() => {
-      setConsolidatedCount((prev) => prev + 1);
+
+    try {
+      // Trigger API consolidation route
+      await api.consolidateMemory(selectedNode.id, selectedNode.schema);
+
+      // Trigger collapsing flag for canvas simulation
+      const currentNodes = nodesRef.current;
+      const nodeIndex = currentNodes.findIndex((n) => n.id === selectedNode.id);
+      if (nodeIndex !== -1) {
+        currentNodes[nodeIndex].isCollapsing = true;
+      }
+
+      setTimeout(() => {
+        setConsolidatedCount((prev) => prev + 1);
+        setIsConsolidating(false);
+        setSelectedNode(null);
+        if (onConsolidated) {
+          onConsolidated();
+        }
+      }, 1200);
+    } catch (err) {
+      console.error("Memory consolidation failed:", err);
       setIsConsolidating(false);
-      setSelectedNode(null);
-    }, 1500);
+    }
   };
 
   return (
@@ -213,23 +277,23 @@ export function DreamStream() {
                     🔥 Impact: {selectedNode.impact}%
                   </span>
                 </div>
-                <h4 className="text-xs font-black text-primary-foreground tracking-wide">
+                <h4 className="text-xs font-black text-primary-foreground tracking-wide line-clamp-2">
                   {selectedNode.title}
                 </h4>
                 <div className="space-y-1">
                   <span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-widest block">Proposed Mutation</span>
-                  <pre className="text-[9px] font-mono text-primary-foreground bg-[#0a0711] p-2.5 rounded-lg border border-border/10 overflow-x-auto leading-relaxed max-h-[110px]">
+                  <div className="text-[9px] font-mono text-primary-foreground bg-[#0a0711] p-2.5 rounded-lg border border-border/10 overflow-y-auto max-h-[100px] whitespace-pre-wrap break-all leading-normal">
                     {selectedNode.schema}
-                  </pre>
+                  </div>
                 </div>
               </div>
               <Button
                 size="sm"
                 onClick={triggerConsolidation}
-                disabled={isConsolidating}
+                disabled={isConsolidating || selectedNode.isCollapsing}
                 className="w-full text-[9px] font-black tracking-widest uppercase rounded-lg h-8 bg-violet-600 hover:bg-violet-700 text-white shadow-[0_0_15px_rgba(124,58,237,0.4)]"
               >
-                {isConsolidating ? "⚡ INTEGRATING TO VAULT..." : "✓ CONSOLIDATE MEMORY"}
+                {isConsolidating ? "⚡ VAULT INTEGRATION..." : "✓ CONSOLIDATE MEMORY"}
               </Button>
             </div>
           ) : (
@@ -246,3 +310,4 @@ export function DreamStream() {
     </Card>
   );
 }
+
