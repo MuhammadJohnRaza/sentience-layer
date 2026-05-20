@@ -900,21 +900,24 @@ async def vault_upload(file: UploadFile = File(...)):
     content = await file.read()
     size_str = f"{len(content)} bytes" if len(content) < 1024 else f"{len(content)/1024:.1f} KB"
     
-    import io
     extracted_text = ""
     
     if filename_lower.endswith(".pdf"):
         try:
-            from pypdf import PdfReader
-            reader = PdfReader(io.BytesIO(content))
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    extracted_text += page_text + "\n"
+            from parser_wrapper import LayoutAwarePDFParser
+            pdf_parser = LayoutAwarePDFParser(content, filename=file.filename)
+            parse_result = pdf_parser.parse()
+            
+            # Reconstruct content as structural, layout-aware Markdown
+            reconstructed_blocks = []
+            for sec in parse_result.get("sections", []):
+                reconstructed_blocks.append(f"## {sec['title']}\n\n{sec['text']}")
+                
+            extracted_text = "\n\n".join(reconstructed_blocks)
             if not extracted_text.strip():
                 extracted_text = "Empty or scanned PDF document."
         except Exception as e:
-            extracted_text = f"Failed to extract PDF text: {str(e)}"
+            extracted_text = f"Failed to extract PDF text using Layout-Aware Parser: {str(e)}"
     elif filename_lower.endswith((".txt", ".json", ".csv", ".tsv", ".log")):
         try:
             extracted_text = content.decode("utf-8", errors="ignore")
