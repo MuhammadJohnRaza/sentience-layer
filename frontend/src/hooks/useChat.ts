@@ -43,6 +43,7 @@ export function useChat() {
             totalDurationMs: response.total_duration_ms,
             agentUsed: response.agent_used,
             sources: response.sources,
+            suggestedActions: response.suggested_actions,
           } as any,
         };
         setMessages((prev) => [...prev, assistantMsg]);

@@ -15,7 +15,7 @@ async def main():
     print(f"Connecting to base URL: {client.base_url}")
     
     print("\n--- Testing OpenRouter Generation (meta-llama/Llama-3-8b-instruct) ---")
-    response = await client.generate("Hello, just say 'Connection successful' and nothing else.", model="google/gemini-2.5-flash")
+    response = await client.generate("Hello, just say 'Connection successful' and nothing else.", model="openrouter/free")
     
     try:
         if response.success:

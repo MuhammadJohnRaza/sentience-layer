@@ -257,7 +257,11 @@ export function ChatInterface() {
 
       {/* Input Tray */}
       <div className="border-t border-border/20 bg-card/40 p-4 space-y-3.5">
-        <SuggestedActions onAction={sendMessage} />
+        {(() => {
+          const lastMsg = messages[messages.length - 1];
+          const lastSuggestions = lastMsg?.role === "assistant" ? lastMsg.metadata?.suggestedActions : undefined;
+          return <SuggestedActions suggestions={lastSuggestions} onAction={sendMessage} />;
+        })()}
         
         {/* Multimodal Attachment Preview Capsule */}
         {selectedFile && (

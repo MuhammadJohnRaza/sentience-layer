@@ -292,10 +292,10 @@ class AntigravityClient:
                     }
                 )
             
-            # Use the requested model (defaults to google/gemini-2.5-flash)
+            # Use the requested model (defaults to openrouter/free)
             target_model = model
-            if target_model == "openrouter/free":
-                target_model = "google/gemini-2.5-flash"
+            if target_model == "google/gemini-2.5-flash":
+                target_model = "openrouter/free"
             
             # OpenAI / OpenRouter standard chat completions endpoint
             url = f"{self.config.base_url}/chat/completions"

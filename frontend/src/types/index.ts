@@ -22,6 +22,7 @@ export interface Message {
     confidence?: number;
     sources?: string[];
     actions?: Action[];
+    [key: string]: any;
   };
 }
 export interface Action {

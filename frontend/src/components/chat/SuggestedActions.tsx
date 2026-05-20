@@ -11,13 +11,16 @@ const SUGGESTIONS = [
 ];
 
 export function SuggestedActions({
+  suggestions,
   onAction,
 }: {
+  suggestions?: string[];
   onAction: (text: string) => void;
 }) {
+  const activeSuggestions = suggestions && suggestions.length > 0 ? suggestions : SUGGESTIONS;
   return (
     <div className="flex flex-wrap gap-2 py-1">
-      {SUGGESTIONS.map((suggestion) => (
+      {activeSuggestions.map((suggestion) => (
         <Button
           key={suggestion}
           variant="outline"
