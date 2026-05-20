@@ -2,17 +2,40 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 
-export const Card = ({ children, style }) => {
+export const Card = ({ children, style, variant = 'default' }) => {
   const theme = useTheme();
+
+  const getVariantStyle = () => {
+    switch (variant) {
+      case 'elevated':
+        return {
+          borderWidth: 2,
+          borderColor: 'rgba(124, 58, 237, 0.4)',
+          ...theme.shadows.panelShadow,
+        };
+      case 'glow':
+        return {
+          borderWidth: 2,
+          borderColor: theme.colors.borderMedium,
+          ...theme.shadows.neonGlow,
+        };
+      default:
+        return {
+          borderWidth: 2,
+          borderColor: theme.colors.border,
+          ...theme.shadows.cardShadow,
+        };
+    }
+  };
 
   return (
     <View style={[
-      styles.card, 
-      { 
-        backgroundColor: theme.colors.surface, 
-        borderColor: theme.colors.border,
-        borderRadius: theme.borderRadius.lg 
-      }, 
+      styles.card,
+      {
+        backgroundColor: theme.colors.card,
+        borderRadius: theme.borderRadius.lg,
+      },
+      getVariantStyle(),
       style
     ]}>
       {children}
@@ -23,12 +46,6 @@ export const Card = ({ children, style }) => {
 const styles = StyleSheet.create({
   card: {
     padding: 16,
-    borderWidth: 1,
     marginVertical: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
 });

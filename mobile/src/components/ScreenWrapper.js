@@ -1,11 +1,14 @@
 import React from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar } from 'react-native';
+import { useTheme } from '../hooks/useTheme';
 
 export function ScreenWrapper({ children }) {
+  const theme = useTheme();
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#050505" />
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.backgroundPrimary }]}>
+      <StatusBar barStyle="light-content" backgroundColor={theme.colors.backgroundPrimary} />
+      <View style={[styles.container, { backgroundColor: theme.colors.backgroundPrimary }]}>
         {children}
       </View>
     </SafeAreaView>
@@ -15,10 +18,8 @@ export function ScreenWrapper({ children }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#050505',
   },
   container: {
     flex: 1,
-    backgroundColor: '#050505',
   }
 });

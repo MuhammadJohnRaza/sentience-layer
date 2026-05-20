@@ -1,36 +1,64 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
-import { Home, Hexagon, Activity, Settings } from 'lucide-react-native';
-
-const PRIMARY_NEON = '#7A2EFF';
-const TEXT_MUTED = '#A7A7B5';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { Home, MessageSquare, BarChart3, Settings } from 'lucide-react-native';
+import { useTheme } from '../hooks/useTheme';
+import { Typography } from './Typography';
 
 export function BottomNav({ activeRoute = 'Home', onNavigate }) {
+  const theme = useTheme();
   const tabs = [
-    { name: 'Home', icon: Home },
-    { name: 'Kernel', icon: Hexagon },
-    { name: 'Metrics', icon: Activity },
-    { name: 'Settings', icon: Settings },
+    { name: 'Home', icon: Home, label: 'HOME' },
+    { name: 'Chat', icon: MessageSquare, label: 'CHAT' },
+    { name: 'Dashboard', icon: BarChart3, label: 'METRICS' },
+    { name: 'Settings', icon: Settings, label: 'SETTINGS' },
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {
+      backgroundColor: 'rgba(17, 17, 17, 0.95)',
+      borderTopColor: theme.colors.border,
+    }]}>
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeRoute === tab.name;
-        
+
         return (
-          <TouchableOpacity 
-            key={tab.name} 
+          <TouchableOpacity
+            key={tab.name}
             style={styles.tab}
             onPress={() => onNavigate && onNavigate(tab.name)}
+            activeOpacity={0.7}
           >
-            <Icon 
-              color={isActive ? PRIMARY_NEON : TEXT_MUTED} 
-              size={24} 
-              style={isActive && styles.activeIcon}
-            />
-            {isActive && <View style={styles.activeDot} />}
+            <View style={[
+              styles.iconWrapper,
+              isActive && {
+                backgroundColor: 'rgba(124, 58, 237, 0.2)',
+                borderRadius: 12,
+                padding: 8,
+              }
+            ]}>
+              <Icon
+                color={isActive ? theme.colors.primaryNeon : theme.colors.textMuted}
+                size={24}
+                style={[isActive && {
+                  shadowColor: theme.colors.primaryNeon,
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.8,
+                  shadowRadius: 10,
+                  elevation: 5,
+                }]}
+              />
+            </View>
+            <Typography
+              variant="tiny"
+              uppercase
+              style={{
+                color: isActive ? theme.colors.primaryNeon : theme.colors.textMuted,
+                marginTop: 4,
+              }}
+            >
+              {tab.label}
+            </Typography>
           </TouchableOpacity>
         );
       })}
@@ -43,33 +71,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#050505',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(122, 46, 255, 0.15)',
-    paddingVertical: 12,
-    paddingBottom: 24, // Safe area for iPhone
+    paddingVertical: 8,
+    paddingBottom: 24,
   },
   tab: {
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
+    paddingVertical: 4,
   },
-  activeIcon: {
-    shadowColor: PRIMARY_NEON,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
-    elevation: 5,
+  iconWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  activeDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: PRIMARY_NEON,
-    marginTop: 4,
-    shadowColor: PRIMARY_NEON,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 5,
-  }
 });

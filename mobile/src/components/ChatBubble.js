@@ -1,28 +1,109 @@
-import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import { Hexagon, User } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { useTheme } from '../hooks/useTheme';
+import { Typography } from './Typography';
+import { Button } from './Button';
 
-const PRIMARY_NEON = '#7A2EFF';
-const TEXT_HIGHLIGHT = '#F5F5F7';
-const TEXT_MUTED = '#A7A7B5';
+export function ChatBubble({ message, isAgent = true, agentName = 'COGNITIVE KERNEL', confidence }) {
+  const theme = useTheme();
+  const [isLoved, setIsLoved] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
-export function ChatBubble({ message, isAgent = true, agentName = 'KERNEL' }) {
   return (
     <View style={[styles.container, isAgent ? styles.agentContainer : styles.userContainer]}>
-      {isAgent && (
-        <View style={styles.avatar}>
-          <Hexagon color={PRIMARY_NEON} size={16} />
-        </View>
-      )}
-      <View style={[styles.bubble, isAgent ? styles.agentBubble : styles.userBubble]}>
-        {isAgent && <Text style={styles.agentName}>{agentName}</Text>}
-        <Text style={styles.messageText}>{message}</Text>
+      {/* Avatar */}
+      <View style={[
+        styles.avatar,
+        {
+          backgroundColor: isAgent ? 'rgba(245, 158, 11, 0.2)' : 'rgba(124, 58, 237, 0.2)',
+          borderColor: isAgent ? 'rgba(245, 158, 11, 0.3)' : theme.colors.border,
+          borderWidth: 2,
+        },
+        isAgent && {
+          shadowColor: '#F59E0B',
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.25,
+          shadowRadius: 12,
+          elevation: 5,
+        }
+      ]}>
+        <Typography style={{ fontSize: 16 }}>
+          {isAgent ? '🧠' : '👤'}
+        </Typography>
       </View>
-      {!isAgent && (
-        <View style={[styles.avatar, styles.userAvatar]}>
-          <User color={TEXT_MUTED} size={16} />
+
+      {/* Message Bubble */}
+      <View style={[
+        styles.bubble,
+        {
+          backgroundColor: isAgent ? theme.colors.card : 'rgba(124, 58, 237, 0.1)',
+          borderColor: isAgent ? 'rgba(124, 58, 237, 0.2)' : 'rgba(124, 58, 237, 0.6)',
+          borderWidth: 1,
+          borderRadius: 16,
+          shadowColor: '#000000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: isAgent ? 0.6 : 0.15,
+          shadowRadius: 15,
+          elevation: isAgent ? 8 : 4,
+        },
+        isAgent ? { borderTopLeftRadius: 4 } : { borderTopRightRadius: 4 }
+      ]}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Typography variant="tiny" uppercase style={{
+            color: isAgent ? '#FCD34D' : theme.colors.textHighlight
+          }}>
+            {isAgent ? agentName : 'USER COGNITION'}
+          </Typography>
+          {confidence && (
+            <View style={[styles.badge, {
+              backgroundColor: 'rgba(16, 185, 129, 0.2)',
+              borderColor: 'rgba(16, 185, 129, 0.25)',
+            }]}>
+              <Typography variant="tiny" style={{ color: '#10B981' }}>
+                {Math.round(confidence * 100)}% CONFIDENCE
+              </Typography>
+            </View>
+          )}
         </View>
-      )}
+
+        {/* Message Content */}
+        <Typography variant="body" style={styles.messageText}>
+          {message}
+        </Typography>
+
+        {/* Action Buttons (Agent only) */}
+        {isAgent && (
+          <View style={styles.actions}>
+            <TouchableOpacity
+              onPress={() => setIsSaved(!isSaved)}
+              style={[styles.actionBtn, {
+                backgroundColor: isSaved ? 'rgba(16, 185, 129, 0.2)' : 'rgba(0, 0, 0, 0.4)',
+                borderColor: isSaved ? 'rgba(16, 185, 129, 0.4)' : theme.colors.border,
+              }]}
+            >
+              <Typography variant="tiny" uppercase style={{
+                color: isSaved ? '#10B981' : theme.colors.textMuted
+              }}>
+                {isSaved ? '🔒 SAVED' : '💾 SAVE'}
+              </Typography>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setIsLoved(!isLoved)}
+              style={[styles.actionBtn, {
+                backgroundColor: isLoved ? 'rgba(244, 63, 94, 0.2)' : 'rgba(0, 0, 0, 0.4)',
+                borderColor: isLoved ? 'rgba(244, 63, 94, 0.4)' : theme.colors.border,
+                paddingHorizontal: 10,
+              }]}
+            >
+              <Typography style={{ fontSize: 14 }}>
+                {isLoved ? '❤️' : '🤍'}
+              </Typography>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -32,55 +113,55 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 16,
     maxWidth: '85%',
+    gap: 12,
   },
   agentContainer: {
     alignSelf: 'flex-start',
   },
   userContainer: {
     alignSelf: 'flex-end',
-    justifyContent: 'flex-end',
+    flexDirection: 'row-reverse',
   },
   avatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(122, 46, 255, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(122, 46, 255, 0.3)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
   },
-  userAvatar: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    marginLeft: 8,
-  },
   bubble: {
-    padding: 12,
-    borderRadius: 16,
-    marginLeft: isAgent => (isAgent ? 8 : 0),
+    flex: 1,
+    padding: 14,
   },
-  agentBubble: {
-    backgroundColor: 'rgba(122, 46, 255, 0.08)',
-    borderTopLeftRadius: 4,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    gap: 8,
+  },
+  badge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(122, 46, 255, 0.2)',
-  },
-  userBubble: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderTopRightRadius: 4,
-  },
-  agentName: {
-    color: PRIMARY_NEON,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1,
-    marginBottom: 4,
   },
   messageText: {
-    color: TEXT_HIGHLIGHT,
-    fontSize: 14,
-    lineHeight: 20,
-  }
+    lineHeight: 22,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(124, 58, 237, 0.1)',
+  },
+  actionBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
 });

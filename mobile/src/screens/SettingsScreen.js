@@ -1,63 +1,160 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, Switch } from 'react-native';
-import { Settings, Cpu, Wifi, Eye } from 'lucide-react-native';
+import { StyleSheet, View, ScrollView, Switch } from 'react-native';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { TopBar } from '../components/TopBar';
-
-const PRIMARY_NEON = '#7A2EFF';
-const TEXT_HIGHLIGHT = '#F5F5F7';
+import { Card } from '../components/Card';
+import { Button } from '../components/Button';
+import { useTheme } from '../hooks/useTheme';
+import { Typography } from '../components/Typography';
 
 export function SettingsScreen() {
+  const theme = useTheme();
   const [offlineSync, setOfflineSync] = useState(true);
   const [stealthMode, setStealthMode] = useState(false);
   const [computeBoost, setComputeBoost] = useState(true);
+  const [notifications, setNotifications] = useState(true);
 
   return (
     <ScreenWrapper>
-      <TopBar title="KERNEL SETTINGS" />
+      <TopBar
+        title="KERNEL SETTINGS"
+        subtitle="⚙️ System Configuration"
+        showStatus={true}
+      />
+
       <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.headerBox}>
-          <Settings color={PRIMARY_NEON} size={40} style={styles.glow} />
-          <Text style={styles.title}>SYSTEM CONFIGURATION</Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={[styles.headerIcon, {
+            backgroundColor: 'rgba(124, 58, 237, 0.2)',
+            borderColor: theme.colors.borderMedium,
+            ...theme.shadows.neonGlow,
+          }]}>
+            <Typography style={{ fontSize: 40 }}>⚙️</Typography>
+          </View>
+
+          <Typography variant="h1" uppercase style={styles.headerTitle}>
+            System Configuration
+          </Typography>
         </View>
 
-        <View style={styles.settingGroup}>
-          <Text style={styles.groupTitle}>NETWORK & SYNC</Text>
-          <View style={styles.settingRow}>
-            <View style={styles.settingLeft}>
-              <Wifi color={PRIMARY_NEON} size={20} />
-              <View>
-                <Text style={styles.settingLabel}>Offline-First Sync</Text>
-                <Text style={styles.settingDesc}>Queue actions while disconnected</Text>
-              </View>
-            </View>
-            <Switch value={offlineSync} onValueChange={setOfflineSync} trackColor={{ true: PRIMARY_NEON, false: 'rgba(255,255,255,0.1)' }} />
-          </View>
-        </View>
+        {/* Network & Sync */}
+        <Typography variant="h2" uppercase style={styles.sectionTitle}>
+          Network & Sync
+        </Typography>
 
-        <View style={styles.settingGroup}>
-          <Text style={styles.groupTitle}>AGENT PREFERENCES</Text>
+        <Card variant="default" style={styles.settingCard}>
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
-              <Eye color={PRIMARY_NEON} size={20} />
-              <View>
-                <Text style={styles.settingLabel}>Stealth Mode</Text>
-                <Text style={styles.settingDesc}>Limit telemetry and logging</Text>
+              <View style={[styles.settingIcon, {
+                backgroundColor: 'rgba(124, 58, 237, 0.15)',
+                borderColor: theme.colors.border,
+              }]}>
+                <Typography style={{ fontSize: 20 }}>📡</Typography>
+              </View>
+              <View style={styles.settingText}>
+                <Typography variant="bodyBold">Offline-First Sync</Typography>
+                <Typography variant="caption" style={styles.settingDesc}>
+                  Queue actions while disconnected
+                </Typography>
               </View>
             </View>
-            <Switch value={stealthMode} onValueChange={setStealthMode} trackColor={{ true: PRIMARY_NEON, false: 'rgba(255,255,255,0.1)' }} />
+            <Switch
+              value={offlineSync}
+              onValueChange={setOfflineSync}
+              trackColor={{ true: theme.colors.primaryNeon, false: 'rgba(255,255,255,0.1)' }}
+              thumbColor={offlineSync ? theme.colors.accentGold : '#f4f3f4'}
+            />
           </View>
+        </Card>
 
+        <Card variant="default" style={styles.settingCard}>
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
-              <Cpu color={PRIMARY_NEON} size={20} />
-              <View>
-                <Text style={styles.settingLabel}>Compute Boost</Text>
-                <Text style={styles.settingDesc}>Allocate max RAM to swarm operations</Text>
+              <View style={[styles.settingIcon, {
+                backgroundColor: 'rgba(124, 58, 237, 0.15)',
+                borderColor: theme.colors.border,
+              }]}>
+                <Typography style={{ fontSize: 20 }}>🔔</Typography>
+              </View>
+              <View style={styles.settingText}>
+                <Typography variant="bodyBold">Push Notifications</Typography>
+                <Typography variant="caption" style={styles.settingDesc}>
+                  Receive agent alerts and updates
+                </Typography>
               </View>
             </View>
-            <Switch value={computeBoost} onValueChange={setComputeBoost} trackColor={{ true: PRIMARY_NEON, false: 'rgba(255,255,255,0.1)' }} />
+            <Switch
+              value={notifications}
+              onValueChange={setNotifications}
+              trackColor={{ true: theme.colors.primaryNeon, false: 'rgba(255,255,255,0.1)' }}
+              thumbColor={notifications ? theme.colors.accentGold : '#f4f3f4'}
+            />
           </View>
+        </Card>
+
+        {/* Agent Preferences */}
+        <Typography variant="h2" uppercase style={styles.sectionTitle}>
+          Agent Preferences
+        </Typography>
+
+        <Card variant="default" style={styles.settingCard}>
+          <View style={styles.settingRow}>
+            <View style={styles.settingLeft}>
+              <View style={[styles.settingIcon, {
+                backgroundColor: 'rgba(124, 58, 237, 0.15)',
+                borderColor: theme.colors.border,
+              }]}>
+                <Typography style={{ fontSize: 20 }}>👁️</Typography>
+              </View>
+              <View style={styles.settingText}>
+                <Typography variant="bodyBold">Stealth Mode</Typography>
+                <Typography variant="caption" style={styles.settingDesc}>
+                  Limit telemetry and logging
+                </Typography>
+              </View>
+            </View>
+            <Switch
+              value={stealthMode}
+              onValueChange={setStealthMode}
+              trackColor={{ true: theme.colors.primaryNeon, false: 'rgba(255,255,255,0.1)' }}
+              thumbColor={stealthMode ? theme.colors.accentGold : '#f4f3f4'}
+            />
+          </View>
+        </Card>
+
+        <Card variant="default" style={styles.settingCard}>
+          <View style={styles.settingRow}>
+            <View style={styles.settingLeft}>
+              <View style={[styles.settingIcon, {
+                backgroundColor: 'rgba(124, 58, 237, 0.15)',
+                borderColor: theme.colors.border,
+              }]}>
+                <Typography style={{ fontSize: 20 }}>⚡</Typography>
+              </View>
+              <View style={styles.settingText}>
+                <Typography variant="bodyBold">Compute Boost</Typography>
+                <Typography variant="caption" style={styles.settingDesc}>
+                  Allocate max RAM to swarm operations
+                </Typography>
+              </View>
+            </View>
+            <Switch
+              value={computeBoost}
+              onValueChange={setComputeBoost}
+              trackColor={{ true: theme.colors.primaryNeon, false: 'rgba(255,255,255,0.1)' }}
+              thumbColor={computeBoost ? theme.colors.accentGold : '#f4f3f4'}
+            />
+          </View>
+        </Card>
+
+        {/* Actions */}
+        <View style={styles.actions}>
+          <Button variant="destructive" size="default" style={styles.actionBtn}>
+            <Typography variant="button" uppercase>
+              RESET TO DEFAULTS
+            </Typography>
+          </Button>
         </View>
       </ScrollView>
     </ScreenWrapper>
@@ -65,14 +162,68 @@ export function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { padding: 16 },
-  headerBox: { alignItems: 'center', marginBottom: 40, marginTop: 20 },
-  glow: { shadowColor: PRIMARY_NEON, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 20 },
-  title: { color: TEXT_HIGHLIGHT, fontSize: 18, fontWeight: '800', letterSpacing: 2, marginTop: 16 },
-  settingGroup: { marginBottom: 30 },
-  groupTitle: { color: PRIMARY_NEON, fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 12, marginLeft: 4 },
-  settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.03)', padding: 16, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(122,46,255,0.15)', marginBottom: 8 },
-  settingLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  settingLabel: { color: TEXT_HIGHLIGHT, fontSize: 14, fontWeight: '600' },
-  settingDesc: { color: '#A7A7B5', fontSize: 11, marginTop: 2 }
+  scroll: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  header: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    gap: 12,
+    marginBottom: 24,
+  },
+  headerIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  headerTitle: {
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  settingCard: {
+    padding: 16,
+    marginBottom: 12,
+  },
+  settingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  settingLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+    marginRight: 16,
+  },
+  settingIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  settingText: {
+    flex: 1,
+    gap: 4,
+  },
+  settingDesc: {
+    opacity: 0.7,
+  },
+  actions: {
+    gap: 12,
+    marginTop: 32,
+  },
+  actionBtn: {
+    width: '100%',
+  },
 });

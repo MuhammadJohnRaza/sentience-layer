@@ -1,27 +1,55 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Hexagon, WifiOff, Bell } from 'lucide-react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { useTheme } from '../hooks/useTheme';
+import { Typography } from './Typography';
 
-const PRIMARY_NEON = '#7A2EFF';
+export function TopBar({ title = 'SENTIENCE', subtitle, showStatus = true, onMenuPress }) {
+  const theme = useTheme();
 
-export function TopBar({ title = 'SENTIENCE', isOffline = true }) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {
+      backgroundColor: 'rgba(17, 17, 17, 0.6)',
+      borderBottomColor: theme.colors.border,
+    }]}>
       <View style={styles.leftSection}>
-        <Hexagon color={PRIMARY_NEON} size={20} style={styles.glowIcon} />
-        <Text style={styles.title}>{title}</Text>
+        <View style={[styles.iconContainer, {
+          backgroundColor: 'rgba(124, 58, 237, 0.2)',
+          borderColor: theme.colors.border,
+          shadowColor: theme.colors.primaryNeon,
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.3,
+          shadowRadius: 12,
+          elevation: 5,
+        }]}>
+          <Typography style={{ fontSize: 20 }}>💬</Typography>
+        </View>
+        <View>
+          <Typography variant="h3" uppercase style={styles.title}>
+            {title}
+          </Typography>
+          {subtitle && (
+            <View style={styles.subtitleRow}>
+              <View style={styles.statusDot} />
+              <Typography variant="tiny" uppercase style={styles.subtitle}>
+                {subtitle}
+              </Typography>
+            </View>
+          )}
+        </View>
       </View>
-      
+
       <View style={styles.rightSection}>
-        {isOffline && (
-          <View style={styles.statusBadge}>
-            <WifiOff color="#F6C344" size={12} />
-            <Text style={styles.statusText}>OFFLINE</Text>
+        {showStatus && (
+          <View style={[styles.statusBadge, {
+            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+            borderColor: 'rgba(16, 185, 129, 0.3)',
+          }]}>
+            <View style={[styles.statusDot, { backgroundColor: '#10B981' }]} />
+            <Typography variant="tiny" uppercase style={{ color: '#10B981' }}>
+              ACTIVE
+            </Typography>
           </View>
         )}
-        <TouchableOpacity style={styles.iconBtn}>
-          <Bell color="#A7A7B5" size={20} />
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -34,26 +62,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: '#050505',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(122, 46, 255, 0.15)',
   },
   leftSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
-  glowIcon: {
-    shadowColor: PRIMARY_NEON,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
-    color: '#F5F5F7',
-    fontSize: 16,
     fontWeight: '800',
-    letterSpacing: 1.5,
+  },
+  subtitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  subtitle: {
+    color: '#D4D4D8',
   },
   rightSection: {
     flexDirection: 'row',
@@ -63,21 +97,16 @@ const styles = StyleSheet.create({
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(246, 195, 68, 0.1)',
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(246, 195, 68, 0.3)',
-    gap: 4,
+    gap: 6,
   },
-  statusText: {
-    color: '#F6C344',
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
   },
-  iconBtn: {
-    padding: 4,
-  }
 });

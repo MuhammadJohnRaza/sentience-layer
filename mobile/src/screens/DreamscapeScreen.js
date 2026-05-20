@@ -1,126 +1,205 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, SafeAreaView } from 'react-native';
-import { Moon, Orbit, Network } from 'lucide-react-native';
-
-const PRIMARY_NEON = '#7A2EFF';
-const TEXT_HIGHLIGHT = '#F5F5F7';
-const TEXT_MUTED = '#A7A7B5';
+import { StyleSheet, View, ScrollView } from 'react-native';
+import { ScreenWrapper } from '../components/ScreenWrapper';
+import { TopBar } from '../components/TopBar';
+import { Card } from '../components/Card';
+import { Button } from '../components/Button';
+import { useTheme } from '../hooks/useTheme';
+import { Typography } from '../components/Typography';
 
 export function DreamscapeScreen() {
+  const theme = useTheme();
+
+  const neuralLogs = [
+    { id: 1, type: 'SYS', message: 'Consolidating memory fragments...', status: 'processing' },
+    { id: 2, type: 'SYS', message: 'Running counterfactual simulations...', status: 'processing' },
+    { id: 3, type: 'SYS', message: 'Pruning low-probability branches...', status: 'processing' },
+    { id: 4, type: 'AGENT_ALPHA', message: 'Extracted new pattern in user workflow.', status: 'success' },
+  ];
+
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenWrapper>
+      <TopBar
+        title="DREAMSCAPE"
+        subtitle="🌌 Memory Consolidation"
+        showStatus={true}
+      />
+
       <ScrollView contentContainerStyle={styles.scroll}>
+        {/* Header */}
         <View style={styles.header}>
-          <Moon color={PRIMARY_NEON} size={32} />
-          <Text style={styles.title}>DREAMSCAPE CONSOLIDATION</Text>
-          <Text style={styles.subtitle}>Memory formation and latent space optimization in progress.</Text>
-        </View>
-
-        <View style={styles.nodeContainer}>
-          <View style={styles.pulseNode}>
-            <Orbit color="#9B5CFF" size={48} />
+          <View style={[styles.headerIcon, {
+            backgroundColor: 'rgba(124, 58, 237, 0.2)',
+            borderColor: theme.colors.borderMedium,
+            ...theme.shadows.neonGlow,
+          }]}>
+            <Typography style={{ fontSize: 40 }}>🌌</Typography>
           </View>
+
+          <Typography variant="h1" uppercase style={styles.headerTitle}>
+            Dreamscape Consolidation
+          </Typography>
+
+          <Typography variant="body" style={styles.headerSubtitle}>
+            Memory formation and latent space optimization in progress
+          </Typography>
         </View>
 
-        <View style={styles.logBox}>
+        {/* Pulse Node Visualization */}
+        <Card variant="glow" style={styles.visualCard}>
+          <View style={styles.pulseContainer}>
+            <View style={[styles.pulseNode, {
+              backgroundColor: 'rgba(124, 58, 237, 0.15)',
+              borderColor: theme.colors.borderMedium,
+              shadowColor: theme.colors.primaryGlow,
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.5,
+              shadowRadius: 20,
+              elevation: 10,
+            }]}>
+              <Typography style={{ fontSize: 48 }}>🧠</Typography>
+            </View>
+            <Typography variant="caption" style={styles.pulseLabel}>
+              NEURAL CONSOLIDATION ACTIVE
+            </Typography>
+          </View>
+        </Card>
+
+        {/* Neural Logs */}
+        <Typography variant="h2" uppercase style={styles.sectionTitle}>
+          Neural Logs
+        </Typography>
+
+        <Card variant="default" style={styles.logCard}>
           <View style={styles.logHeader}>
-            <Network color={TEXT_MUTED} size={14} />
-            <Text style={styles.logTitle}>NEURAL LOGS</Text>
+            <Typography style={{ fontSize: 14 }}>🔗</Typography>
+            <Typography variant="tiny" uppercase style={styles.logTitle}>
+              System Activity
+            </Typography>
           </View>
-          <Text style={styles.logText}>[SYS] Consolidating memory fragments...</Text>
-          <Text style={styles.logText}>[SYS] Running counterfactual simulations...</Text>
-          <Text style={styles.logText}>[SYS] Pruning low-probability branches...</Text>
-          <Text style={styles.logTextHighlight}>[AGENT_ALPHA] Extracted new pattern in user workflow.</Text>
+
+          {neuralLogs.map((log) => (
+            <View key={log.id} style={styles.logRow}>
+              <Typography variant="caption" style={[styles.logType, {
+                color: log.status === 'success' ? theme.colors.success : theme.colors.primaryNeon
+              }]}>
+                [{log.type}]
+              </Typography>
+              <Typography variant="body" style={[styles.logMessage, {
+                color: log.status === 'success' ? theme.colors.success : theme.colors.textBody
+              }]}>
+                {log.message}
+              </Typography>
+            </View>
+          ))}
+        </Card>
+
+        {/* Actions */}
+        <View style={styles.actions}>
+          <Button variant="primary" size="default" style={styles.actionBtn}>
+            <Typography variant="button" uppercase>
+              FORCE CONSOLIDATION
+            </Typography>
+          </Button>
+          <Button variant="outline" size="default" style={styles.actionBtn}>
+            <Typography variant="button" uppercase>
+              VIEW DREAM LOG
+            </Typography>
+          </Button>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#050505',
-  },
   scroll: {
-    padding: 24,
+    padding: 16,
+    paddingBottom: 40,
   },
   header: {
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 40,
+    paddingVertical: 32,
+    gap: 12,
+    marginBottom: 24,
   },
-  title: {
-    color: TEXT_HIGHLIGHT,
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: 2,
-    marginTop: 16,
-    textShadowColor: 'rgba(122, 46, 255, 0.5)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
-  subtitle: {
-    color: TEXT_MUTED,
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 8,
-    lineHeight: 18,
-  },
-  nodeContainer: {
+  headerIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 200,
-    marginBottom: 40,
+    marginBottom: 8,
+  },
+  headerTitle: {
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    textAlign: 'center',
+    opacity: 0.8,
+    paddingHorizontal: 32,
+    lineHeight: 22,
+  },
+  visualCard: {
+    padding: 40,
+    marginBottom: 24,
+    minHeight: 200,
+  },
+  pulseContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 20,
   },
   pulseNode: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: 'rgba(122, 46, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(122, 46, 255, 0.3)',
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#9B5CFF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
   },
-  logBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 16,
+  pulseLabel: {
+    textAlign: 'center',
+    opacity: 0.8,
+  },
+  sectionTitle: {
+    marginBottom: 16,
+  },
+  logCard: {
     padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: 24,
   },
   logHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+    paddingBottom: 12,
     marginBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-    paddingBottom: 8,
+    borderBottomColor: 'rgba(124, 58, 237, 0.2)',
   },
   logTitle: {
-    color: TEXT_MUTED,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1,
+    opacity: 0.7,
   },
-  logText: {
-    color: TEXT_MUTED,
-    fontSize: 11,
-    fontFamily: 'monospace',
-    marginBottom: 6,
+  logRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
   },
-  logTextHighlight: {
-    color: '#32D74B', // Success green for highlight
-    fontSize: 11,
+  logType: {
     fontFamily: 'monospace',
-    marginBottom: 6,
-    fontWeight: '600',
-  }
+    fontWeight: '800',
+  },
+  logMessage: {
+    flex: 1,
+    fontFamily: 'monospace',
+    fontSize: 12,
+  },
+  actions: {
+    gap: 12,
+  },
+  actionBtn: {
+    width: '100%',
+  },
 });

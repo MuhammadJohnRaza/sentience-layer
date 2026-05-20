@@ -1,143 +1,212 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { ScreenWrapper } from '../components/ScreenWrapper';
+import { TopBar } from '../components/TopBar';
+import { Card } from '../components/Card';
+import { Button } from '../components/Button';
+import { useTheme } from '../hooks/useTheme';
+import { Typography } from '../components/Typography';
 
 const { width } = Dimensions.get('window');
 
 const MODULES = [
-  { id: 'Dashboard', label: 'Dashboard', icon: 'view-dashboard', color: '#4f46e5', desc: 'System overview' },
-  { id: 'Input', label: 'Comm Link', icon: 'message-text', color: '#8b5cf6', desc: 'Direct kernel input' },
-  { id: 'Workflow', label: 'Trace', icon: 'map-marker-path', color: '#06b6d4', desc: 'Active workflows' },
-  { id: 'Simulation', label: 'Simulate', icon: 'calculator-variant', color: '#f59e0b', desc: 'Predictive modeling' },
-  { id: 'Memory', label: 'Memory', icon: 'brain', color: '#10b981', desc: 'Cognitive storage' },
-  { id: 'Dreamscape', label: 'Dreamscape', icon: 'creation', color: '#ec4899', desc: 'Offline synthesis' },
-  { id: 'Causal', label: 'Causal Graph', icon: 'graph', color: '#f43f5e', desc: 'Logic mapping' },
-  { id: 'Economy', label: 'Economic', icon: 'chart-line', color: '#fb923c', desc: 'Value orchestration' },
-  { id: 'Doubt', label: 'Doubt Room', icon: 'shield-alert', color: '#a855f7', desc: 'Confidence analysis' }
+  { id: 'ContentInput', label: 'Content→Action', icon: '📄', desc: 'Upload & analyze', featured: true },
+  { id: 'Dashboard', label: 'Dashboard', icon: '📊', desc: 'System overview' },
+  { id: 'Chat', label: 'Cognitive Chat', icon: '💬', desc: 'Multi-agent reasoning' },
+  { id: 'Causal', label: 'Causal Graph', icon: '🕸️', desc: 'Logic mapping' },
+  { id: 'Simulation', label: 'Simulate', icon: '🎯', desc: 'Predictive modeling' },
+  { id: 'Memory', label: 'Memory Vault', icon: '🧠', desc: 'Cognitive storage' },
+  { id: 'Dreamscape', label: 'Dreamscape', icon: '🌌', desc: 'Offline synthesis' },
+  { id: 'Economy', label: 'Economic', icon: '💰', desc: 'Value orchestration' },
+  { id: 'Doubt', label: 'Doubt Room', icon: '🤔', desc: 'Confidence analysis' },
 ];
 
 export default function HomeScreen({ navigation }) {
+  const theme = useTheme();
+
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Sentience Layer</Text>
-        <Text style={styles.subGreeting}>Welcome back, Administrator.</Text>
-      </View>
+    <ScreenWrapper>
+      <TopBar
+        title="SENTIENCE LAYER"
+        subtitle="Cognitive Operating System"
+        showStatus={false}
+      />
 
-      <View style={styles.statusSection}>
-        <View style={styles.statusCard}>
-          <Icon name="checkbox-marked-circle" size={24} color="#10b981" />
-          <View>
-            <Text style={styles.statusTitle}>All Systems Nominal</Text>
-            <Text style={styles.statusDetail}>18 Agents | 94% Self-Awareness</Text>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        {/* Hero Section */}
+        <View style={styles.hero}>
+          <View style={[styles.heroIcon, {
+            backgroundColor: 'rgba(124, 58, 237, 0.2)',
+            borderColor: theme.colors.borderMedium,
+            ...theme.shadows.neonGlow,
+          }]}>
+            <Typography style={{ fontSize: 48 }}>🔮</Typography>
           </View>
+
+          <Typography variant="h1" uppercase style={styles.heroTitle}>
+            Sentience Layer
+          </Typography>
+
+          <Typography variant="body" style={styles.heroSubtitle}>
+            A Cognitive Operating System powered by Google Antigravity — where AI agents reason, simulate, and act with human-aligned intelligence.
+          </Typography>
         </View>
-      </View>
 
-      <Text style={styles.sectionTitle}>Cognitive Modules</Text>
-      <View style={styles.grid}>
-        {MODULES.map(module => (
-          <TouchableOpacity
-            key={module.id}
-            style={styles.moduleCard}
-            onPress={() => navigation.navigate(module.id)}
-          >
-            <View style={[styles.iconContainer, { backgroundColor: module.color + '20' }]}>
-              <Icon name={module.icon} size={28} color={module.color} />
+        {/* Status Card */}
+        <Card variant="elevated" style={styles.statusCard}>
+          <View style={styles.statusContent}>
+            <View style={[styles.statusIcon, {
+              backgroundColor: 'rgba(16, 185, 129, 0.2)',
+              borderColor: 'rgba(16, 185, 129, 0.3)',
+            }]}>
+              <Typography style={{ fontSize: 24 }}>✓</Typography>
             </View>
-            <Text style={styles.moduleLabel}>{module.label}</Text>
-            <Text style={styles.moduleDesc}>{module.desc}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+            <View style={styles.statusText}>
+              <Typography variant="h3" uppercase>
+                All Systems Nominal
+              </Typography>
+              <Typography variant="caption" style={styles.statusDetail}>
+                18 Agents • 94% Self-Awareness
+              </Typography>
+            </View>
+          </View>
+        </Card>
 
-      <View style={{ height: 40 }} />
-    </ScrollView>
+        {/* Modules Section */}
+        <Typography variant="h2" uppercase style={styles.sectionTitle}>
+          Cognitive Modules
+        </Typography>
+
+        <View style={styles.grid}>
+          {MODULES.map(module => (
+            <TouchableOpacity
+              key={module.id}
+              style={[styles.moduleCard, {
+                backgroundColor: module.featured ? 'rgba(124, 58, 237, 0.2)' : theme.colors.card,
+                borderColor: module.featured ? theme.colors.primary : theme.colors.border,
+                borderWidth: module.featured ? 3 : 2,
+              }]}
+              onPress={() => navigation?.navigate(module.id)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.iconContainer, {
+                backgroundColor: module.featured ? 'rgba(124, 58, 237, 0.3)' : 'rgba(124, 58, 237, 0.15)',
+                borderColor: theme.colors.border,
+              }]}>
+                <Typography style={{ fontSize: 28 }}>{module.icon}</Typography>
+              </View>
+              <Typography variant="h3" uppercase style={styles.moduleLabel}>
+                {module.label}
+              </Typography>
+              <Typography variant="caption" style={styles.moduleDesc}>
+                {module.desc}
+              </Typography>
+              {module.featured && (
+                <View style={styles.featuredBadge}>
+                  <Typography variant="caption" style={{ fontSize: 10 }}>
+                    ⭐ COMPETITION DEMO
+                  </Typography>
+                </View>
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+    </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0a0a1a'
+  scroll: {
+    padding: 20,
+    paddingBottom: 40,
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    paddingBottom: 20
+  hero: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    gap: 16,
   },
-  greeting: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#e0e0ff',
-    letterSpacing: 1
+  heroIcon: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
-  subGreeting: {
-    fontSize: 14,
-    color: '#6b6b8a',
-    marginTop: 4
+  heroTitle: {
+    textAlign: 'center',
+    fontSize: 32,
   },
-  statusSection: {
-    paddingHorizontal: 20,
-    marginBottom: 24
+  heroSubtitle: {
+    textAlign: 'center',
+    lineHeight: 24,
+    paddingHorizontal: 16,
+    opacity: 0.9,
   },
   statusCard: {
-    backgroundColor: '#1a1a3e',
-    borderRadius: 16,
-    padding: 16,
+    marginVertical: 24,
+    padding: 20,
+  },
+  statusContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    borderWidth: 1,
-    borderColor: '#10b98140'
+    gap: 16,
   },
-  statusTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#e0e0ff'
+  statusIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusText: {
+    flex: 1,
+    gap: 4,
   },
   statusDetail: {
-    fontSize: 12,
-    color: '#6b6b8a'
+    opacity: 0.7,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#e0e0ff',
-    marginHorizontal: 20,
-    marginBottom: 16
+    marginBottom: 16,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 20,
-    gap: 12
+    marginHorizontal: -6,
   },
   moduleCard: {
     width: (width - 52) / 2,
-    backgroundColor: '#1a1a3e',
-    borderRadius: 20,
+    borderRadius: 16,
     padding: 20,
-    borderWidth: 1,
-    borderColor: '#2a2a4a',
-    marginBottom: 12
+    borderWidth: 2,
+    marginHorizontal: 6,
+    marginBottom: 12,
   },
   iconContainer: {
-    width: 52,
-    height: 52,
+    width: 56,
+    height: 56,
     borderRadius: 16,
+    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12
+    marginBottom: 12,
   },
   moduleLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#e0e0ff'
+    fontSize: 14,
+    marginBottom: 4,
   },
   moduleDesc: {
-    fontSize: 11,
-    color: '#6b6b8a',
-    marginTop: 4
-  }
+    opacity: 0.7,
+  },
+  featuredBadge: {
+    marginTop: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    backgroundColor: 'rgba(251, 191, 36, 0.2)',
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
 });

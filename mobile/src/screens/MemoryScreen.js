@@ -1,36 +1,114 @@
-import React from 'react';
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
-import { BrainCircuit, Search } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, ScrollView, TextInput } from 'react-native';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { TopBar } from '../components/TopBar';
-
-const PRIMARY_NEON = '#9B5CFF';
-const TEXT_HIGHLIGHT = '#F5F5F7';
+import { Card } from '../components/Card';
+import { Button } from '../components/Button';
+import { useTheme } from '../hooks/useTheme';
+import { Typography } from '../components/Typography';
 
 export function MemoryScreen() {
+  const theme = useTheme();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const memoryNodes = [
+    { key: 'LAST_USER_INTENT', value: '"Optimize server load balancing across regions"', type: 'intent' },
+    { key: 'ACTIVE_AGENTS', value: '[Planner, Architect, DevAgent, DebateAgent]', type: 'system' },
+    { key: 'CONTEXT_WINDOW', value: '128K tokens | 94% utilized', type: 'system' },
+    { key: 'RECENT_DECISION', value: 'Prioritize latency over throughput', type: 'decision' },
+  ];
+
   return (
     <ScreenWrapper>
-      <TopBar title="SHORT-TERM MEMORY" />
+      <TopBar
+        title="MEMORY VAULT"
+        subtitle="🧠 Cognitive Storage"
+        showStatus={true}
+      />
+
       <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.headerBox}>
-          <BrainCircuit color={PRIMARY_NEON} size={40} style={styles.glow} />
-          <Text style={styles.title}>CONTEXT BUFFER</Text>
-          <Text style={styles.subtitle}>Current session active working memory state.</Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={[styles.headerIcon, {
+            backgroundColor: 'rgba(124, 58, 237, 0.2)',
+            borderColor: theme.colors.borderMedium,
+            ...theme.shadows.neonGlow,
+          }]}>
+            <Typography style={{ fontSize: 40 }}>🧠</Typography>
+          </View>
+
+          <Typography variant="h1" uppercase style={styles.headerTitle}>
+            Context Buffer
+          </Typography>
+
+          <Typography variant="body" style={styles.headerSubtitle}>
+            Current session active working memory state
+          </Typography>
         </View>
 
-        <View style={styles.searchBar}>
-          <Search color="#A7A7B5" size={16} />
-          <Text style={styles.searchPlaceholder}>Search memory nodes...</Text>
+        {/* Search Bar */}
+        <View style={[styles.searchBar, {
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          borderColor: theme.colors.border,
+        }]}>
+          <Typography style={{ fontSize: 16 }}>🔍</Typography>
+          <TextInput
+            style={[styles.searchInput, { color: theme.colors.textBody }]}
+            placeholder="Search memory nodes..."
+            placeholderTextColor={theme.colors.textMuted}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
         </View>
 
-        <View style={styles.nodeBox}>
-          <Text style={styles.nodeKey}>LAST_USER_INTENT</Text>
-          <Text style={styles.nodeValue}>"Optimize server load balancing across regions"</Text>
-        </View>
+        {/* Memory Nodes */}
+        <Typography variant="h2" uppercase style={styles.sectionTitle}>
+          Active Memory Nodes
+        </Typography>
 
-        <View style={styles.nodeBox}>
-          <Text style={styles.nodeKey}>ACTIVE_AGENTS</Text>
-          <Text style={styles.nodeValue}>[Planner, Architect, DevAgent, DebateAgent]</Text>
+        {memoryNodes.map((node, index) => (
+          <Card key={index} variant="default" style={styles.nodeCard}>
+            <View style={styles.nodeHeader}>
+              <Typography variant="tiny" uppercase style={[styles.nodeKey, {
+                color: theme.colors.primaryNeon
+              }]}>
+                {node.key}
+              </Typography>
+              <View style={[styles.typeBadge, {
+                backgroundColor: node.type === 'intent' ? 'rgba(252, 211, 77, 0.2)' :
+                                 node.type === 'decision' ? 'rgba(124, 58, 237, 0.2)' :
+                                 'rgba(16, 185, 129, 0.2)',
+                borderColor: node.type === 'intent' ? 'rgba(252, 211, 77, 0.3)' :
+                             node.type === 'decision' ? 'rgba(124, 58, 237, 0.3)' :
+                             'rgba(16, 185, 129, 0.3)',
+              }]}>
+                <Typography variant="tiny" uppercase style={{
+                  color: node.type === 'intent' ? theme.colors.accentGold :
+                         node.type === 'decision' ? theme.colors.primaryNeon :
+                         theme.colors.success
+                }}>
+                  {node.type}
+                </Typography>
+              </View>
+            </View>
+            <Typography variant="body" style={styles.nodeValue}>
+              {node.value}
+            </Typography>
+          </Card>
+        ))}
+
+        {/* Actions */}
+        <View style={styles.actions}>
+          <Button variant="primary" size="default" style={styles.actionBtn}>
+            <Typography variant="button" uppercase>
+              EXPORT MEMORY
+            </Typography>
+          </Button>
+          <Button variant="outline" size="default" style={styles.actionBtn}>
+            <Typography variant="button" uppercase>
+              CLEAR CACHE
+            </Typography>
+          </Button>
         </View>
       </ScrollView>
     </ScreenWrapper>
@@ -38,14 +116,79 @@ export function MemoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { padding: 16 },
-  headerBox: { alignItems: 'center', marginBottom: 30, marginTop: 20 },
-  glow: { shadowColor: PRIMARY_NEON, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 20 },
-  title: { color: TEXT_HIGHLIGHT, fontSize: 18, fontWeight: '800', letterSpacing: 2, marginTop: 16 },
-  subtitle: { color: '#A7A7B5', fontSize: 12, textAlign: 'center', marginTop: 8 },
-  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', padding: 12, borderRadius: 12, marginBottom: 20, gap: 10 },
-  searchPlaceholder: { color: '#A7A7B5', fontSize: 12 },
-  nodeBox: { backgroundColor: 'rgba(155,92,255,0.05)', padding: 16, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(155,92,255,0.2)', marginBottom: 12, borderLeftWidth: 4, borderLeftColor: PRIMARY_NEON },
-  nodeKey: { color: PRIMARY_NEON, fontSize: 10, fontWeight: '800', letterSpacing: 1, marginBottom: 6 },
-  nodeValue: { color: TEXT_HIGHLIGHT, fontSize: 13, fontFamily: 'monospace' }
+  scroll: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  header: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    gap: 12,
+  },
+  headerIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  headerTitle: {
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    textAlign: 'center',
+    opacity: 0.8,
+    paddingHorizontal: 32,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 24,
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  sectionTitle: {
+    marginBottom: 16,
+  },
+  nodeCard: {
+    padding: 16,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#7C3AED',
+  },
+  nodeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  nodeKey: {
+    flex: 1,
+  },
+  typeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  nodeValue: {
+    fontFamily: 'monospace',
+    lineHeight: 20,
+  },
+  actions: {
+    gap: 12,
+    marginTop: 24,
+  },
+  actionBtn: {
+    width: '100%',
+  },
 });

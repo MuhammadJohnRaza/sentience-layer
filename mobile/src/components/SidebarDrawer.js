@@ -1,12 +1,11 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, ScrollView } from 'react-native';
 import { Hexagon, LayoutDashboard, BrainCircuit, Activity, Settings, X } from 'lucide-react-native';
-
-const PRIMARY_NEON = '#7A2EFF';
-const TEXT_HIGHLIGHT = '#F5F5F7';
-const TEXT_MUTED = '#A7A7B5';
+import { useTheme } from '../hooks/useTheme';
+import { Typography } from './Typography';
 
 export function SidebarDrawer({ isOpen, onClose }) {
+  const theme = useTheme();
   if (!isOpen) return null;
 
   const menuItems = [
@@ -19,14 +18,23 @@ export function SidebarDrawer({ isOpen, onClose }) {
   return (
     <View style={styles.overlay}>
       <TouchableOpacity style={styles.backdrop} onPress={onClose} />
-      <View style={styles.drawer}>
-        <View style={styles.header}>
+      <View style={[styles.drawer, { backgroundColor: theme.colors.backgroundSecondary, borderRightColor: theme.colors.border, shadowColor: theme.colors.primaryNeon }]}>
+        <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
           <View style={styles.logoRow}>
-            <Hexagon color={PRIMARY_NEON} size={24} style={styles.glow} />
-            <Text style={styles.logoText}>SENTIENCE</Text>
+            <Hexagon
+              color={theme.colors.primaryNeon}
+              size={24}
+              style={{
+                shadowColor: theme.colors.primaryNeon,
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.8,
+                shadowRadius: 10,
+              }}
+            />
+            <Typography variant="h2" style={styles.logoText}>SENTIENCE</Typography>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <X color={TEXT_MUTED} size={20} />
+            <X color={theme.colors.textMuted} size={20} />
           </TouchableOpacity>
         </View>
 
@@ -35,16 +43,16 @@ export function SidebarDrawer({ isOpen, onClose }) {
             const Icon = item.icon;
             return (
               <TouchableOpacity key={index} style={styles.menuItem}>
-                <Icon color={PRIMARY_NEON} size={20} />
-                <Text style={styles.menuText}>{item.label}</Text>
+                <Icon color={theme.colors.primaryNeon} size={20} />
+                <Typography variant="body" style={styles.menuText}>{item.label}</Typography>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
-        
-        <View style={styles.footer}>
-          <Text style={styles.versionText}>Kernel v3.1.4</Text>
-          <Text style={styles.statusText}>ALL SYSTEMS NOMINAL</Text>
+
+        <View style={[styles.footer, { borderTopColor: theme.colors.border }]}>
+          <Typography variant="caption" style={styles.versionText}>Kernel v3.1.4</Typography>
+          <Typography variant="caption" style={[styles.statusText, { color: theme.colors.success }]}>ALL SYSTEMS NOMINAL</Typography>
         </View>
       </View>
     </View>
@@ -64,10 +72,7 @@ const styles = StyleSheet.create({
   },
   drawer: {
     width: '75%',
-    backgroundColor: '#0B0B12',
     borderRightWidth: 1,
-    borderRightColor: 'rgba(122, 46, 255, 0.3)',
-    shadowColor: PRIMARY_NEON,
     shadowOffset: { width: 5, height: 0 },
     shadowOpacity: 0.2,
     shadowRadius: 20,
@@ -81,22 +86,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(122, 46, 255, 0.15)',
   },
   logoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  glow: {
-    shadowColor: PRIMARY_NEON,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
-  },
   logoText: {
-    color: TEXT_HIGHLIGHT,
-    fontSize: 16,
     fontWeight: '800',
     letterSpacing: 2,
   },
@@ -115,26 +111,19 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
   menuText: {
-    color: TEXT_HIGHLIGHT,
-    fontSize: 14,
     fontWeight: '600',
     letterSpacing: 1,
   },
   footer: {
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(122, 46, 255, 0.15)',
     alignItems: 'center',
   },
   versionText: {
-    color: TEXT_MUTED,
-    fontSize: 12,
     fontFamily: 'monospace',
     marginBottom: 4,
   },
   statusText: {
-    color: '#32D74B',
-    fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
   }
