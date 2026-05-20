@@ -205,6 +205,86 @@ Our operations integration is powered by custom n8n pipelines:
             total_duration_ms=5.0
         )
 
+    # ── CONVERSATIONAL INTERCEPTOR ────────────────────────────────────────
+    # Catches follow-up questions and natural language project queries
+    # so they get rich, contextual answers instead of the generic swarm fallback.
+    import re as _re
+
+    _followup_patterns = [
+        r"^tell me more",
+        r"^tell me more about (this|the) project",
+        r"^(what|explain|describe|elaborate|more about|give me more)",
+        r"^(what is|what are|what does) (this|that|the|sentience|this system|this project)",
+        r"^(how does|how do) (this|that|it|the system|sentience layer) work",
+        r"^(what can (you|this|it) do)",
+        r"^(what('s| is) (your|its|this) purpose)",
+        r"^(conversational style|how do you talk|how do you communicate|communication style)",
+        r"^(what (agents|pipelines|workflows|n8n|features) (are|do|exist|is))",
+        r"^(explain|describe) (the |)(system|architecture|agents|pipeline|workflow|project|sentience|swarm)",
+    ]
+
+    is_conversational = any(_re.search(p, message_clean) for p in _followup_patterns)
+
+    if is_conversational:
+        conversational_content = """🧠 **Sentience Layer — Deep Dive**
+
+The **Sentience Layer** is an enterprise-grade **AI Operations Assistant** built on a **18-agent cognitive swarm**. Here's how it works end-to-end:
+
+---
+
+### 🗣️ Conversational Style
+This system communicates in a **structured, consultative tone** — like a senior AI architect and operations partner. It:
+- 🎯 **Does not** use filler phrases like *"Sure! Absolutely!"* — responses begin directly with analytical insight.
+- 🧩 **Adapts** to your role: executives get ROI summaries, engineers get exact commands and schemas, ops managers get step-by-step workflow triggers.
+- 🔒 **Flags uncertainty** with confidence scores. Below 50% confidence triggers the Clarification Protocol rather than guessing.
+- 📋 Every tactical plan includes a **Structured Action Playbook**: task + owner + deadline + feasibility score.
+
+---
+
+### 🐝 The 18-Agent Swarm Network
+Every chat query routes through a **3-step agent reasoning chain**:
+1. **🔍 Critic Agent** — Rigorously audits the query, identifies risks, gaps, and evidence.
+2. **🤝 Consensus Agent** — Synthesizes the critique into a single, high-confidence key finding.
+3. **📋 Action Playbook Agent** — Generates concrete, owner-assigned, deadline-bound action items.
+
+Other specialized agents in the network include: `CausalAgent`, `DreamAgent`, `EthicsAgent`, `EconomicAgent`, `UncertaintyAgent`, `PremonitionAgent`, and more — each handling a specific cognitive domain.
+
+---
+
+### ⛓️ Connected Pipelines
+| Pipeline | What it does |
+|---|---|
+| **RAG / Vector Search** | Layout-aware PDF parsing → Semantic chunking → pgvector embeddings |
+| **Memory Layer** | Redis sliding window (last 12 messages) + LLM-compressed summaries |
+| **WebSocket Stream** | Real-time agent debate telemetry → Web & Mobile dashboards |
+| **Vault** | Secure document ingestion, processed by PyMuPDF layout parser |
+
+---
+
+### 🔀 n8n Automation Workflows
+| Workflow | Trigger | Action |
+|---|---|---|
+| **Document Ingestion** | File upload webhook | Parse PDF → Embed → Insert pgvector |
+| **CRM Onboarding** | New client signup | HubSpot upsert + Postgres schema + Slack alert |
+| **Human Handoff** | Low-confidence audit | Pause AI + Slack escalation to operator |
+| **Jira Integration** | Issue created/resolved | Auto-categorize + sprint forecasting |
+
+---
+
+*Ask me to audit a risk, run a simulation, upload a document, or trigger a workflow — I'm ready.*"""
+
+        return ChatResponse(
+            content=conversational_content,
+            key_finding="Sentience Layer architecture and conversational style explained.",
+            intent="conversational_explanation",
+            confidence=1.0,
+            severity="LOW",
+            agent_used="conversational_handler",
+            agent_chain=[],
+            suggested_actions=["Upload a document to Vault", "Run a Swarm Debate", "Simulate a scenario"],
+            total_duration_ms=8.0
+        )
+
     # Resolve agent selection and custom system prompt from client context
     agent_id = "swarm"  # default: use full 3-agent chain
     system_prompt = None
