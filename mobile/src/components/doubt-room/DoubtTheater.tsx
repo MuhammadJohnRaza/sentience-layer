@@ -128,7 +128,7 @@ export function DoubtTheater({ onDebateChanged }: DoubtTheaterProps) {
 
     setIsSimulating(true);
     try {
-      const newDebate = await api.createDebate(newTopic);
+      const newDebate = await api.createDebate(newTopic) as DebateTopic;
       setActiveDebates((prev) => [newDebate, ...prev]);
       setSelectedDebateId(newDebate.id);
       updateArgumentLog(newDebate);

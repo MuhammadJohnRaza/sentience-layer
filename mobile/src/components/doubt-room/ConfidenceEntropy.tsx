@@ -12,7 +12,16 @@ interface ConfidenceEntropyProps {
 }
 
 export function ConfidenceEntropy({ refreshTrigger, activeDebate }: ConfidenceEntropyProps) {
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<{
+    entropy: number;
+    totalAudits: number;
+    confidenceLevels: {
+      high: number;
+      medium: number;
+      low: number;
+      uncertainty: number;
+    };
+  }>({
     entropy: 0.35,
     totalAudits: 28,
     confidenceLevels: {
@@ -26,8 +35,12 @@ export function ConfidenceEntropy({ refreshTrigger, activeDebate }: ConfidenceEn
   const fetchStats = async () => {
     try {
       const data = await api.getDoubtStats();
-      if (data) {
-        setStats(data);
+      if (data && !Array.isArray(data)) {
+        setStats(data as {
+          entropy: number;
+          totalAudits: number;
+          confidenceLevels: { high: number; medium: number; low: number; uncertainty: number };
+        });
       }
     } catch (err) {
       console.error("Failed to load doubt stats:", err);
