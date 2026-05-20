@@ -273,8 +273,7 @@ Our multi-agent diagnostic swarms have identified a critical correlation between
 
 ***
 
-**I have compiled the checkout index optimization script and discount campaign trigger.**
-**Do you want to run it? Yes or full update**"""
+*I have compiled the database caching optimization plan and CRM retargeting actions. How would you like us to proceed today? Would you like me to execute this self-healing playbook right away to recover your lost conversions, or perform a full system update first to inspect other sub-telemetries? Let me know what you would like to follow!*"""
         return ChatResponse(
             content=sales_content,
             key_finding="A 30% drop in active conversion rates is correlated with database query latencies exceeding 420ms on the checkout registry.",
@@ -326,7 +325,7 @@ Initiating autonomous self-healing execution sequence...
 
 ***
 
-*Cognitive loops fully restored. Threat levels contained. Do you want me to perform a full system update or check vault telemetry?*"""
+*Our cognitive self-healing loop is fully completed and verified! What would you like to follow up on next today? We can check the full subsystems telemetry, explore the RAG Vault, or inspect the causal discovery graph. Let me know what you'd like to do next!*"""
         return ChatResponse(
             content=yes_content,
             key_finding="Self-healing playbook execution simulation completed successfully. 97.1% database latency speedup achieved.",
@@ -363,7 +362,7 @@ All 18 specialized cognitive agents are active and aligned with the Google Antig
 
 ***
 
-*All metrics are optimal. Cognitive operating system cleared for high-capacity workload executions.*"""
+*All metrics are optimal and fully consolidated. I hope your day is going exceptionally well! What would you like to follow up on next today? We can run more dynamic agent simulations or dive into the RAG Vault documents!*"""
         return ChatResponse(
             content=full_content,
             key_finding="All 18 specialized agents are nominal. Threat levels are 0.0% with 100% containment integrity.",
@@ -402,8 +401,7 @@ Executing the *Postgres Table Cache* intervention is projected to compress laten
 
 ***
 
-*Would you like to trigger this intervention?*
-**Do you want to run it? Yes or full update**"""
+*This causal graph shows exactly why database caching is so crucial. How is your day going, and what would you like to follow up on next today? Should we run the cache self-healing playbook, or check the full subsystems telemetry?*"""
         return ChatResponse(
             content=causal_content,
             key_finding="Causal path checkout_query_lag -> cart_abandonment verified with -0.74 coefficient.",
@@ -487,6 +485,7 @@ Adhere to the CONVERSATIONAL RULES exactly:
 - If asked "how can I use agents" → explain how the swarm agents collaborate (Critic audits, Consensus resolves, Playbook outputs).
 - If asked "what is run opportunity scan" → explain the OpportunityAnalystAgent action in detail (creating recovery segments, coupon distribution).
 - If asked "what is next plan" → outline next steps clearly.
+- End your response with a warm, natural conversational follow-up question asking the user how their day is going and what they would like to follow up on next (incorporating "what would you like to follow up on next today?").
 - Use premium markdown formatting.
 """
             dynamic_res = await antigravity.generate(dynamic_prompt, max_tokens=1000)
