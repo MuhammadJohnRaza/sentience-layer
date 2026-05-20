@@ -168,6 +168,43 @@ async def chat(req: ChatRequest):
     from datetime import datetime
     import importlib
 
+    # ── GREETINGS OVERRIDE ────────────────────────────────────────────────
+    message_clean = req.message.lower().strip().strip("?!.,")
+    greetings = {"hello", "hi", "hey", "hola", "greetings", "good morning", "good afternoon", "yo"}
+    if message_clean in greetings:
+        greeting_content = """👋 **Hello! Welcome to the Sentience Layer Cognitive Dashboard.**
+
+I am your **Enterprise Cognitive Orchestrator**, a multi-agent swarm coordinating cognitive processes across your operations.
+
+### 🧠 What is this system about?
+The **Sentience Layer** is an advanced cognitive framework that serves as an **AI Operations Assistant**. It uses a multi-agent network (comprising 18 specialized agents including Critic, Consensus, Playbook, and Causal Inference agents) to audit operational doubts, evaluate business risks, formulate executable playbooks, and automate complex tasks.
+
+### ⛓️ What pipelines is it connected to?
+* **RAG / Embedding Pipeline**: Ingests multi-column and tabular documents using a layout-aware PyMuPDF engine, chunks them semantically, embeds them using Google Text Embeddings, and indexes them in a **PostgreSQL database (with pgvector)** using HNSW indices for hybrid dense/lexical search.
+* **Dual-Tier Memory Space**: Features a Redis-backed episodic memory for sliding short-term conversational context with automatic LLM-driven summary compression to handle large context windows seamlessly.
+* **WebSocket Telemetry Stream**: Connects to web dashboards and mobile touchpoints to stream real-time agent debates and cognitive belief state transitions.
+
+### 🔀 What workflows are triggered via n8n?
+Our operations integration is powered by custom n8n pipelines:
+1. **Document Ingestion Pipeline (`document_ingestion.json`)**: Automatically triggered on file uploads to run the parser, compute embeddings, and insert vector blocks into Postgres.
+2. **Client Onboarding & CRM Sync (`client_onboarding.json`)**: Upserts user data in HubSpot, provisions custom Postgres database schemas, creates Slack alert channels, and delivers onboarding reports.
+3. **Human Handoff & Slack Escalation (`human_handoff.json`)**: Listens for low-confidence agent audits, alerts a dedicated Slack operator channel, and pauses autonomous AI execution until claimed by a human operator.
+4. **Jira & Action Integration (`jira_integration.json` / `action_execution.json`)**: Coordinates Jira issue auto-categorization, sprint reviews/insights forecasting, and validates operational execution steps.
+
+---
+*How can I assist you in auditing, simulating, or mapping your system operations today?*"""
+        return ChatResponse(
+            content=greeting_content,
+            key_finding="System greeting and architecture overview initialized.",
+            intent="greeting",
+            confidence=1.0,
+            severity="LOW",
+            agent_used="greetings_handler",
+            agent_chain=[],
+            suggested_actions=["Explore RAG Vault", "Run a Simulation", "Audit Swarm Doubt"],
+            total_duration_ms=5.0
+        )
+
     # Resolve agent selection and custom system prompt from client context
     agent_id = "swarm"  # default: use full 3-agent chain
     system_prompt = None
